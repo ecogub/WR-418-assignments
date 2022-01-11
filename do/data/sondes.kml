@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>sondes.kml</name>
+	<Style id="sh_bars00">
+		<IconStyle>
+			<scale>1.4</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<StyleMap id="msn_bars0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_bars1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_bars00</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sh_bars1">
+		<IconStyle>
+			<scale>1.4</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<Style id="sh_bars0">
+		<IconStyle>
+			<scale>1.4</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<StyleMap id="msn_arrow">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_arrow</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_arrow</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_bars1">
+		<IconStyle>
+			<scale>1.2</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<Style id="sn_bars10">
+		<IconStyle>
+			<scale>1.2</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<Style id="sn_bars">
+		<IconStyle>
+			<scale>1.2</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<Style id="sn_arrow">
+		<IconStyle>
+			<scale>1.2</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/arrow.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<Style id="sh_arrow">
+		<IconStyle>
+			<scale>1.4</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/arrow.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<Style id="sn_bars100">
+		<IconStyle>
+			<scale>1.2</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<Style id="sh_bars01">
+		<IconStyle>
+			<scale>1.4</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/bars.png</href>
+			</Icon>
+			<hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+		</IconStyle>
+	</Style>
+	<StyleMap id="msn_bars1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_bars</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_bars1</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_bars">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_bars100</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_bars01</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_bars2">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_bars10</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_bars0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Folder>
+		<name>FC WQ Sondes (proposed)</name>
+		<open>1</open>
+		<Placemark>
+			<name>Manners Sonde (FC-existing)</name>
+			<LookAt>
+				<longitude>-105.2683128333124</longitude>
+				<latitude>40.69768012587407</latitude>
+				<altitude>0</altitude>
+				<heading>-0.08560233014652471</heading>
+				<tilt>60.00463994806649</tilt>
+				<range>415.67289155624</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_arrow</styleUrl>
+			<Point>
+				<coordinates>-105.268789582588,40.69664096293968,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Rist Canyon Rd (CSU)</name>
+			<LookAt>
+				<longitude>-105.1685354807065</longitude>
+				<latitude>40.63130029677316</latitude>
+				<altitude>0</altitude>
+				<heading>0.2083681680719992</heading>
+				<tilt>50.28484355465184</tilt>
+				<range>653.2847809932821</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars0</styleUrl>
+			<Point>
+				<coordinates>-105.1686841938056,40.62972596688869,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Legacy (CSU)</name>
+			<LookAt>
+				<longitude>-105.0858487387635</longitude>
+				<latitude>40.60048843565968</latitude>
+				<altitude>5.235218889249731</altitude>
+				<heading>-11.49002525691967</heading>
+				<tilt>0</tilt>
+				<range>402.3923959817016</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars0</styleUrl>
+			<Point>
+				<coordinates>-105.0860836682553,40.60042070545744,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Lincoln (In-situ)</name>
+			<LookAt>
+				<longitude>-105.0474243759618</longitude>
+				<latitude>40.5940645273962</latitude>
+				<altitude>0</altitude>
+				<heading>0.2928239000611432</heading>
+				<tilt>36.82294234142028</tilt>
+				<range>4297.628101477326</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars2</styleUrl>
+			<Point>
+				<coordinates>-105.0696126484236,40.58846706801617,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Timberline (FC)</name>
+			<LookAt>
+				<longitude>-105.0335317405922</longitude>
+				<latitude>40.5755097953822</latitude>
+				<altitude>0</altitude>
+				<heading>0.2753334587201302</heading>
+				<tilt>37.27293157707572</tilt>
+				<range>93.3540701047269</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars</styleUrl>
+			<Point>
+				<coordinates>-105.0334862229658,40.57541897906313,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Prospect (FC)</name>
+			<LookAt>
+				<longitude>-105.025517048705</longitude>
+				<latitude>40.56783595173849</latitude>
+				<altitude>0</altitude>
+				<heading>0.2784171455517122</heading>
+				<tilt>35.32475474750959</tilt>
+				<range>730.1729695303961</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars2</styleUrl>
+			<Point>
+				<coordinates>-105.0271701445075,40.5672675298831,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>ELC (CSU; online)</name>
+			<LookAt>
+				<longitude>-105.0130523198837</longitude>
+				<latitude>40.55215788537538</latitude>
+				<altitude>0</altitude>
+				<heading>-17.99369779795934</heading>
+				<tilt>0</tilt>
+				<range>365.5963875913057</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars0</styleUrl>
+			<Point>
+				<coordinates>-105.012532865534,40.55225390749725,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Archery Range (FC)</name>
+			<LookAt>
+				<longitude>-104.9992494402136</longitude>
+				<latitude>40.54882923547716</latitude>
+				<altitude>0</altitude>
+				<heading>7.452076447145677</heading>
+				<tilt>44.3747569832848</tilt>
+				<range>450.086545949032</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars1</styleUrl>
+			<Point>
+				<coordinates>-105.001088201321,40.54789429827185,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Fossil Creek (FC)</name>
+			<LookAt>
+				<longitude>-104.9665270219672</longitude>
+				<latitude>40.50223547871483</latitude>
+				<altitude>0</altitude>
+				<heading>0.3142885753343106</heading>
+				<tilt>37.96655548045617</tilt>
+				<range>474.2586471011721</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#msn_bars2</styleUrl>
+			<Point>
+				<coordinates>-104.9677293914284,40.50217198105919,0</coordinates>
+			</Point>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>

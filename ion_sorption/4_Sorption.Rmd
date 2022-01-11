@@ -1,0 +1,101 @@
+---
+title: "Ion Sorption"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+```{r setup}
+
+library(sf)
+library(tidyverse)
+library(dataRetrieval)
+library(mapview)
+library(lubridate)
+library(ggthemes)
+```
+
+
+# Suspended sediment and contaminants
+
+For this assignment we will be looking at the correlation between various
+metals and suspended sediment concentrations at sites across Colorado. 
+
+
+
+
+# Site Selection
+
+```{r}
+
+#read in spatial
+sites <- st_read('sites.gpkg')
+
+
+mapview(sites, legend = F)
+```
+
+
+## Q1) Pick a site to focus on based on random preference. Make a map of your site.
+
+
+```{r}
+## Using the filter function 
+
+
+```
+
+
+
+## Q2) Plot a time series of TSS data at this site, what do you think controls
+variation in TSS? 
+
+
+```{r}
+
+metals_tss <- read_csv('c_metals_tss.csv')
+
+tss <- metals_tss %>%
+  filter(parameter == 'Total suspended solids' | parameter ==  'Suspended Sediment Concentration (SSC)')
+
+## Don't use this site
+tss_site <- tss %>%
+  filter(SiteID == 'USGS-06754000')
+
+# Make a plot
+ggplot(tss_site %>%
+         filter(year(date) > 2015), aes(x = date, y = harmonized_value)) + 
+  geom_point() + 
+  scale_y_log10()
+```
+
+
+## Q3) Plot a time series of 3 metals at this site. What do you think controls
+the concentration of metals?
+
+(if you have less than three, plot as many you can)
+
+```{r}
+
+```
+
+
+
+## Q4) Make a dataset with TSS and Metals concentrations combined and plot TSS vs
+Concentration. 
+
+## Q5) What might cause these relationships? Use language from the lectures to 
+justify your response
+
+
+
+
+BONUS
+
+Download Q data and look at teh correlation between Q and TSS and Q and Metals.
+
+What might be the reason for the correlation or lack thereof? 
+
+

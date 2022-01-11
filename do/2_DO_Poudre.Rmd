@@ -1,0 +1,166 @@
+---
+title: "Dissolved Oxygen in the Cache La Poudre"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse) # Data wrangling and viz
+library(mapview) # For interactive maps
+library(sf) # Spatial data
+library(lubridate) # Dealing with time
+library(dygraphs) # dynamic graphs
+library(xts) # time series
+#remotes::install_github("r-spatial/mapview")
+
+
+
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, 
+                      comment = F)
+```
+
+# Background
+
+In late summer 2018, there was a large fish kill in the Cache La Poudre river in Fort Collins, Colorado. After that event, the City of Fort Collins and the 
+Ross lab installed 6 water quality sensors in the river to get real-time water 
+quality information. One key parameter these sensors measured was dissolved 
+oxygen, because fish kills can be caused by low oxygen levels, sometimes called
+anoxic events. These events are caused by a variety of things, but often it is when water is slow moving, has a highly productive algal community in the river (or lake). These algae produce oxygen during the day but at night and when the 
+waters cool, they die. Their decomposing bodies consume oxygen rapidly. 
+
+For this assignment we will explore controls on dissolved oxygen at a variety
+of sites in the Cache La Poudre. 
+
+## Site Map
+
+```{r}
+sites <- st_read('data/sondes.kml') %>%
+  filter(Name != 'Manners Sonde (FC-existing)') %>%
+  mutate(Name = factor(Name,levels=c('Rist Canyon Rd (CSU)',
+                                     'Legacy (CSU)',
+                                     'Lincoln (In-situ)',
+                                     'Timberline (FC)',
+                                     'Prospect (FC)',
+                                     'ELC (CSU; online)',
+                                     'Archery Range (FC)',
+                                     'Fossil Creek (FC)')))
+
+
+mapview(sites, zcol = 'Name', col.regions=c('#1b7837','#7fbf7b','gray',
+                                        '#d9f0d3','#e7d4e8',
+                                        '#af8dc3','#762a83','gray'
+                                        ))
+```
+
+### Question 1)
+
+When thinking about controls on dissolved oxygen in rivers, what are three 
+important gradients that change as you go from Rist Canyon to Archery Range? 
+(hint use the different basemaps to explore the landscape)
+
+TYPE YOUR ANSWER HERE (3-5 Sentences)
+
+
+## Dataset 
+
+For this project the City and the Ross Lab are measuring:
+
+- Temperature
+- Dissolved Oxygen (as % saturation and mg/l)
+- Turbidity
+- pH
+- ORP (oxidation reduction potential)
+- Water Level
+- Specific Conductivity (salinity)
+
+Here we will be looking at a subset of this sensor data for October, 2019.
+
+```{r}
+
+p_dat <- read_csv('data/oct_2019.csv')
+
+
+```
+
+
+## Site specific analysis
+
+
+### Rist Canyon
+
+
+```{r}
+rist_dat <- p_dat %>%
+  filter(site == 'Rist',
+         day(hour) > 7)
+
+ggplot(data = rist_dat, aes(x = hour, y = value)) + 
+  geom_line() + 
+  facet_wrap(~sensor, scales = 'free')
+```
+
+
+### Reshaping data
+
+```{r}
+cool_sensors <- c('depth','do_mg','salinity','temp','turb')
+
+rist_clean <- rist_dat %>%
+  filter(sensor %in% cool_sensors)
+
+ggplot(data = rist_clean, aes(x = hour, y = value)) + 
+  geom_line() + 
+  facet_wrap(~sensor, scales = 'free',ncol = 1)
+
+rist_wide <- pivot_wider(rist_clean,
+                         names_from = sensor,
+                         values_from = value)
+
+rist_xts <- xts(rist_wide %>% select(do_mg,depth),
+                order.by = rist_wide$hour)
+
+dygraph(rist_xts)
+```
+
+
+## Question 2) Pick a different site and make a graph with 4 sensor timeseries (must include DO)
+
+```{r}
+# Your Code here
+```
+
+
+## Question 3) With the sensors you chose, what correlations do you see between different datasets? 
+
+## Question 4) Make a plot with your 4 sensor time series and data for Rist Canyon and your site.
+
+
+```{r}
+prospect_rist <- p_dat %>%
+  filter(site == c('Prospect', 'Rist'),
+         day(hour) > 7)
+```
+
+
+## Question 5) What landscape variable differences might explain
+the differences you see in your plot? 
+
+
+## Question 6) What River morphology (shape) differences might
+explain differences you see in your plots? 
+
+
+## Question 7) Make a plot for all sites with DO on the X-axis
+and pH on the Y
+
+```{r}
+
+## Your code here
+```
+
+
+## Using your google skills, describe the relationship between
+pH and dissolved oxygen, why/how are these variables related? 
+
+

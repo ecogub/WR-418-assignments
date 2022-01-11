@@ -1,0 +1,165 @@
+---
+title: "Metal Leaching Kinetics"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = F}
+library(sf)
+library(tidyverse)
+#devtools::install_github('r-spatial/mapview')
+library(mapview)
+library(dataRetrieval)
+library(ggthemes)
+
+mines <- st_read('lead_mines.gpkg') %>%
+  st_transform(4326)
+
+sites <- tibble(SiteID = c('CG-6','CG-4','AR-1','AR-3'),
+            lat = c(39.222188,39.225272,39.257021,39.221486),
+            long = c(-106.355587,-106.343571,
+                     -106.343826,-106.355870)) %>%
+st_as_sf(.,coords=c('long','lat'), crs = 4326)
+
+fake <- tibble(x = 1:10, y= 1:10, 
+               site = c('a','a','a','a','b','b','b','b','d','d'))
+
+
+
+```
+
+
+## Environmental Context
+
+### California Gulch and the Arkansas River
+
+Over the past 29 years (1989-2018), the Clements
+lab has integrated a long-term observational and
+experimental research program to evaluate
+ecological recovery of the Arkansas River, a
+subalpine watershed located approximately 110
+km southwest of Denver, CO (Clements et al.
+2010). Mining activities in the watershed
+throughout the late 19th and early 20th century
+focused primarily on deposits in California Gulch
+(CG) and Leadville Mine Drainage Tunnel
+(LMDT). CG and much of the surrounding
+watershed was designated a U.S. EPA Superfund
+Site in 1983 due to high concentrations of a big three of metal 
+contaminants: Copper, Cadmium, and Zinc.
+
+Restoration activities in other
+sections of the watershed included construction of
+water treatment facilities in CG and LMDT,
+removal of 150,000 m3 of tailings from CG and
+nearby tributaries and revegetation of riparian areas
+(treatments completed in 1999). The
+Arkansas River dataset represents one of the most comprehensive assessments of stream
+communities and associated water quality in North America. Because data were collected upstream and downstream from sources of metal contamination before (1989-1999) and after (2000-2016) the completion of a $20.5 million restoration program, they provide a unique opportunity to investigate responses in space and time. Historically, fish communities were dominated by salmonids, including the native greenback cutthroat trout (Oncorhynchus clarki stomias).  Native fishes were extirpated in the early 1900s (Behnke 2002), and a self-sustaining population of non-native brown trout now comprise over 90% of the fish community.
+
+
+### Study Sites
+
+Below are four of the most well studied sites on the Arkansas
+River and it's tributary, California Gulch
+
+```{r}
+
+
+mapview(sites) + 
+  mapview(mines, size = 1)
+```
+
+
+## Kinetics Assignment
+
+Here we will be looking at the kinetics of the three primary contaminants associated with mining near Leadville. 
+
+## Q1) Read in the data
+
+Use the function `read_csv` to read in the `CleanArk.csv` dataset
+
+```{r}
+
+test <- read_csv('CleanArk.csv')
+
+```
+
+
+## Q1.5) Explore the data
+
+Use a summary function to explore your data like `summary`, `str` or `head`
+
+```{r}
+glimpse(test)
+```
+
+
+## Q2) Plot the data
+
+Now that you better understand the data, make a plot with time on the x axis (date_time) and concentration on the y-axis (these are all in mg/L). Note that there are multiple sites, so you might want to color the data by site or wrap it by site. 
+
+
+```{r}
+
+```
+
+## Provide context for the data
+
+### What might explain the variations we see? 
+
+## Q3) Use dataRetrieval to download discharge data at a site 
+downstream of the river (`07083710`)
+
+Start with data from 1985 and download daily Q
+
+```{r}
+
+```
+
+
+## Q4) Plot the discharge data with time on the x axis
+
+```{r}
+
+```
+
+
+## Q5) Join the discharge data with the chemistry data
+
+
+```{r}
+
+```
+
+## Q6) Make a plot of Q (discharge) versus C (concentration of contaminants). Plot both on a log axis. 
+
+```{r}
+ggplot(test, aes(x = date, y = value)) +
+  geom_point()+
+  facet_wrap(~parameter)+
+  scale_y_log10()
+```
+
+## Q7) What do you see in this plot? Is Q positively correlated with concentration (enriching)? Or negatively correlated (dilution)? Or stable (no variation in C with lots of change in Q)
+
+
+## Q8) What can these plots tell us about environmental controls on metal leaching in the environment? 
+
+
+## Q9) Do you see a shift in the relationship between Q and C after restoration started in 2000? (make a plot where these two periods are different colors)
+
+```{r}
+
+```
+
+
+## What might have caused this shift? 
+
+Hint! Watch this video. (This is for the Leadvill Mine Drainage Tunnel, but similar ideas could be used for California Gulch)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/YhnSXJwZHBk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+
