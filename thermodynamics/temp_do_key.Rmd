@@ -71,14 +71,17 @@ and temperature (code '00010') data from the South Platte River at Englewood, CO
 ('06711565') for the 2019 water year.
 
 ```{r}
-
+data <- readNWISdv(siteNumbers = '06711565',
+                   parameterCd = c('00060', '00300', '00010'),
+                   startDate = '2018-10-01',
+                   endDate =  '2019-9-30')
 ```
 
 ## Q2: 
 Look at the structure of the data in any way you choose.
 
 ```{r}
-
+glimpse(data)
 ```
 
 ## Q3: 
@@ -87,14 +90,22 @@ observations, and reduce your data frame to only include the date and your data
 of interest. 
 
 ```{r}
-
+data <- data %>%
+  rename(temp_C = X_00010_00003, 
+         q_cfs = X_00060_00003,
+         do_mgl = X_00300_00003) %>%
+  select(Date, temp_C, q_cfs, do_mgl) %>%
+  na.omit()
 ```
 
 ## Q4: 
 Plot a time series of all three parameters the same graph.
 
 ```{r}
-
+ggplot(data, aes(x = Date))+
+  geom_line(aes(y = q_cfs))+
+  geom_line(aes(y = temp_C))+
+  geom_line(aes(y = do_mgl))
 ```
 
 ## Q5: 
@@ -102,12 +113,17 @@ This time series graph is not very useful to us.
 Why not? Give two examples of design choices you could make to improve its
 usefulness.
 
+*The scale of discharge is way beyond that of temperature and DO. One way to improve this is to facet wrap by parameter. Another low-haning improvement would be to label the parameters by color.*
 
-
-## Q6: Implement one (or more) of your proposed changes.
+## Q6: Implement one of your proposed changes.
 
 ```{r}
+data_long <- pivot_longer(data, cols = c(q_cfs, do_mgl, temp_C),
+                          names_to = 'var', values_to = 'val')
 
+ggplot(data_long, aes(x = Date, y = val, color = var))+
+  geom_line()+
+  facet_wrap(vars(var), ncol = 1, scales = 'free')
 ```
 
 ## Q7: 
@@ -115,7 +131,11 @@ Scatterplots are a great way to compare correlations.
 Create two scatterplots. One of DO vs Q, the other of DO vs temperature.
 
 ```{r}
+ggplot(data, aes(x = q_cfs, y = do_mgl))+
+  geom_point()
 
+ggplot(data, aes(x = temp_C, y = do_mgl))+
+  geom_point()
 ```
 
 ## Q8: 
@@ -124,9 +144,11 @@ related (look at the 'help' window for documentation). Which relationship is it?
 Why do you think that is? Report your answers in complete sentences.
 
 ```{r}
-
+cor(data$temp_C, data$do_mgl)
+cor(data$q_cfs, data$do_mgl)
 ```
 
+*Temperature is more closely correlated to DO than discharge. This is likely due to the lower solubility of gas in warm water and the energetics needed for photosynthesis.*
 
 ## Q9:
 Imagine the city of Englewood is exploring building a coal-fired power
