@@ -11,35 +11,113 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(feather)
+library(dataRetrieval)
 ```
 
 # Acid Rain
 
-## History of acid rain in the US
+While rain is naturally acidic due to the carbonation of water (more on that 
+later in the semester), a polluted atmosphere can increase the acidity of 
+rainfall. Adding acid to a land surface can displace soil cations and change 
+solute chemistry in downstream waterways. Burning fossil fuels was, and is,
+major source of air pollution. The [Clean Air Act Amendments of 1990](https://www.epa.gov/sites/default/files/2015-11/documents/the_clean_air_act_-_highlights_of_the_1990_amendments.pdf) were instrumental in tackling polluted air in the US. The amendments capped total
+emissions of acidic nitrogen oxides and sulfur dioxides, establishing a 
+tradeable, emissions credit pool for power plants. You can read more about the 
+long-term effects of these efforts [in this informative paper.](https://www.esf.edu/efb/mitchell/Class%20Readings/Nat.401.575.578.pdf)
 
 ## Hubbard Brook 
 
-https://hubbardbrook.org/watersheds/watershed-6
-
-## Solute export
-
-```{r}
-
-```
+The [Hubbard Brook Experimental Forest (HBEF)](https://hubbardbrook.org/hubbard-brook-research-focus) is a long-running ecosystem 
+study located in New Hampshire.The study has several small streams running 
+through forested watersheds. Different treatments have been applied to some of 
+the watersheds, but this unit we will be looking at a reference site, [watershed 6](https://hubbardbrook.org/watersheds/watershed-6). W6 is located in the industrail Northeast of the US and has a record beginning in 1963, making it ideal to observe the effects of acid rain.
 
 
 # Working with files in R
 
 ## The working directory
+When referencing file paths in R, it is important to know what directory you 
+are working in. A directory is just another name for folder level. 
+
+Let's check ours now.
+
+```{r, include = T}
+getwd()
+```
+
+When working with data files, it's convenient to set our working directory. This
+lets us use relative file paths when referencing files moving forward. It also
+makes it easier for others to use our code. They will only need to change one
+line to use our data structure on their computer. To do so, we use the function
+'setwd()', giving the function the file path of the script. In my case it's
+a little convoluted due to Dropbox. Yours will likely be shorter.
+
+```{r, include = T}
+setwd("C:/Users/gubbi/Dropbox/My PC (DESKTOP-RMMTJHU)/Documents/WR 418/WR-418-assignments/ph_2")
+```
+
 
 ## Reading in files
+Now that our working directory is set, we can read in our data files. The files
+we are using have been downloaded from [Macrosheds](macrosheds.org), which uses
+a file format called 'feather'. For those of you that have used R before, you 
+are probably familiar with the function 'read.csv()'. This works basically the
+same, but for a more efficient file format. 
+
+To read in the file, we will supply the 'read_feather()' function the location 
+of the file relative to our working directory.
+```{r, include = T}
+q <- read_feather('data/w6_discharge.feather')
+head(q)
+```
+
+See how I didn't have to type out "C:/Users/gubbi/Dropbox/My PC (DESKTOP-RMMTJHU)/Documents/WR 418/WR-418-assignments/ph_2/data/w6_discharge.feather" again? 
+This saves a lot of time and space in longer workflows and makes editing your 
+code much quicker.
 
 ## Long vs wide data
+There are many different ways data can be stored. One simple data dichotomy is 
+wide vs long. Wide data has many columns, usually with each variable in a 
+column. The data retrieved from the USGS is in wide format. Long data has 
+many rows, with a column of variables describing other values. The data 
+downloaded from Macrosheds comes in a long format. To switch between them we 
+can use the functions 'pivot_wider()' and 'pivot_longer()'. 
+
+Here is an example of pivoting USGS data from wide to long. First, I'll 
+retrieve the gauge height (local water elevation) and discharge data from a 
+favorite gauge of mine, Cicero Creek at Arcadia, IN.
+```{r, include=TRUE}
+cicero <- readNWISuv(siteNumbers = '03349510',
+                     parameterCd = c('00060', '00065'),
+                     startDate = '2017-10-01',
+                     endDate = '2018-9-30') %>% 
+  rename(q_cfs = 'X_00060_00000',
+         gh_ft = 'X_00065_00000') %>%
+  select(dateTime, gh_ft, q_cfs)
+
+```
+
+Next, I will use 'pivot_longer()'. The 'cols' argument denotes what to pivot 
+(in this case everything but the dateTime column), the 'names_to' is the new 
+column to put the old column names as values, and the 'values_to' argument is 
+the new column to put the old column values in. 'Pivot_wider()' works in a similar way.
+```{r, include=TRUE}
+cicero_long <- cicero %>%
+  pivot_longer(cols = -dateTime,
+               names_to = 'var',
+               values_to = 'val')
+
+head(cicero_long)
+
+```
 
 # Assignment
 
 ## Q0: 
-*If you're working on this from your own computer*, set your working directory to where this file's directory. Skip this question if you are working in the Rstudio cloud IDE. *This should be the last time either group uses a full file path in this assignment.*
+**If you're working on this from your own computer**, set your working directory 
+to where this file's directory. Skip this question if you are working in the 
+Rstudio cloud IDE as it has already been done for you. **This should be the last** 
+**time either group uses a full file path in this assignment.**
 
 ```{r}
 setwd("~/WR 418/WR-418-assignments/ph_2")
@@ -59,7 +137,9 @@ chem <- read_feather('data/w6_chemistry.feather')
 Make your data useful and understood.
 
 ### Part A:
-Combine the chemistry and discharge data objects. Remove the columns 'ms_status', 'ms_interp', and 'val_err'.
+Combine the chemistry and discharge data objects. Remove the columns 'ms_status'
+, 'ms_interp', and 'val_err' (these are data quality flags we won't be using now).
+(Hint: look into the ['bind'](https://stat.ethz.ch/R-manual/R-devel/library/base/html/cbind.html) functions.)
 
 ```{r}
 cq <- rbind(chem, q) %>%
@@ -67,7 +147,9 @@ cq <- rbind(chem, q) %>%
 ```
 
 ### Part B:
-Describe (in text) the structure of your new, combined object. What are the columns and what do they contain? Is your data in a long or wide format? When does your dataset begin and end?
+Describe (in text) the structure of your new, combined object. What are the 
+columns and what do they contain? Is your data in a long or wide format? When 
+does your dataset begin and end?
 
 ### Part C:
 Use the 'unique()' function to list all variables represented in the dataset.
@@ -79,7 +161,10 @@ unique(cq$var)
 ## Q3:
 
 ### Part A:
-Plot a timeseries of pH at HBEF W6. Color the data by whether it is pre or post Clean Air Act Amendments of 1990, or use a vertical line to denote its passage.Make the figure look presentable, with labels, a title, and a descriptive caption.(Hint: the code for pH in this dataset is 'GN_pH'.)
+Plot a timeseries of pH at HBEF W6. Color the data by whether it is pre or post
+Clean Air Act Amendments of 1990, or use a vertical line to denote its passage.
+Make the figure look presentable, with labels, a title, and a descriptive 
+caption.(Hint: the code for pH in this dataset is 'GN_pH'.)
 
 
 ```{r}
@@ -95,7 +180,9 @@ ggplot(filter(cq, var == 'GN_pH'), aes(x = datetime, y = val, color = datetime>a
 ```
 
 ### Part B:
-Fit two linear models, one to the data before and and the other after the passage of the Clean Air Act Amendments of 1990.Display your results using the 'summary()' function.
+Fit two linear models, one to the data before and and the other after the 
+passage of the Clean Air Act Amendments of 1990.Display your results using the 
+'summary()' function.
 
 ```{r}
 # trim data
@@ -116,9 +203,14 @@ post_model <-lm(cq_model$val[cq_model$post_cca==1] ~ cq_model$datetime[cq_model$
 summary(post_model)
 ```
 
+### Part C:
+Briefly interpret your model outputs in context.
 
 ## Q5
-Aluminum is highly abundant (~7% of Earth's crust) and is toxic to life (with rare exceptions). The predominant form it takes in solution is pH dependent, with the Al^(2+) ion the most toxic to aquatic life. We will cover the exact mechanism of this pH dependence later in the semester. For now, let's just try and observe the effect. 
+Aluminum is highly abundant (~7% of Earth's crust) and is toxic to life. The 
+predominant form it takes in solution is pH dependent, with the Al^(3+) ion the
+most toxic to aquatic life. We will cover the exact mechanism of this pH 
+dependence later in the semester. For now, let's just try and observe the effect. 
 
 ### Part A: 
 Pivot your data from long format, to wide.
@@ -130,7 +222,8 @@ cq_wide <- pivot_wider(cq, id_cols = c(datetime, site_code),
 
 ### Part B: 
 Make a scatterplot of Al vs pH. (Hint: the code for Al in this dataset is 'GN_Al_ICP')
-Make the figure look presentable, with labels, a title, and a descriptive caption. (Reminder: your final .html should *not* show warnings, messages, errors, etc.)
+Make the figure look presentable, with labels, a title, and a descriptive caption. 
+(Reminder: your final .html should *not* show warnings, messages, errors, etc.)
 ```{r}
 ggplot(cq_wide, aes(x = GN_pH, y = GN_Al_ICP))+
     geom_point()
@@ -146,7 +239,8 @@ What other factors may be acting on as a control on aluminum at W6?
 
 
 ## Bonus Question
-Create a model describing the relationship between pH and Al at HBEF (it is not simple linear). Add your model to the graph from Q5.
+Create a model describing the relationship between pH and Al at HBEF (it is not
+simple linear). Add your model to the graph from Q5.
 ```{r}
 cq_model2 <- cq_wide %>%
   select(GN_Al_ICP, GN_pH) %>%
