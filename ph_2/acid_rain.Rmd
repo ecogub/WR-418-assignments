@@ -24,8 +24,7 @@ https://hubbardbrook.org/watersheds/watershed-6
 ## Solute export
 
 ```{r}
-as.xts
-dygraph
+
 ```
 
 
@@ -48,9 +47,6 @@ setwd("~/WR 418/WR-418-assignments/ph_2")
 
 
 ## Q1:
-Get your data into the R environment
-
-### Part A:
 Read in the the '.feather' data files for Q and stream chemistry at W6.
 
 ```{r}
@@ -59,17 +55,10 @@ chem <- read_feather('data/w6_chemistry.feather')
 
 ```
 
-### Part B:
-Read in the file 'ws_traits.csv'.
-
-```{r}
-ws_traits <- read.csv('data/ws_traits.csv')
-```
-
 ## Q2: 
 Make your data useful and understood.
 
-### Part 1:
+### Part A:
 Combine the chemistry and discharge data objects. Remove the columns 'ms_status', 'ms_interp', and 'val_err'.
 
 ```{r}
@@ -77,10 +66,10 @@ cq <- rbind(chem, q) %>%
     select(-c('ms_status', 'ms_interp','val_err'))
 ```
 
-### Part 2:
+### Part B:
 Describe (in text) the structure of your new, combined object. What are the columns and what do they contain? Is your data in a long or wide format? When does your dataset begin and end?
 
-### Part 3:
+### Part C:
 Use the 'unique()' function to list all variables represented in the dataset.
 ```{r}
 unique(cq$var)
@@ -88,24 +77,58 @@ unique(cq$var)
 
 
 ## Q3:
-Plot a timeseries of pH at HBEF W6. (Hint: the code for pH in this dataset is 'GN_pH'.)
+
+### Part A:
+Plot a timeseries of pH at HBEF W6. Color the data by whether it is pre or post Clean Air Act Amendments of 1990, or use a vertical line to denote its passage.Make the figure look presentable, with labels, a title, and a descriptive caption.(Hint: the code for pH in this dataset is 'GN_pH'.)
+
 
 ```{r}
-ggplot(filter(cq, var == 'GN_pH'), aes(x = datetime, y = val))+
-    geom_line()
+ggplot(filter(cq, var == 'GN_pH'), aes(x = datetime, y = val, color = datetime>as.POSIXct('1990-11-15')))+
+    geom_line()+
+    labs(y = 'W6 Stream pH',
+         x = '',
+         color = 'Clean Air Act Amendments of 1990')+
+  scale_color_manual(values = c('black', 'red'),
+                     labels = c('Pre', 'Post'))+
+  theme(legend.position = 'bottom')
     
 ```
 
-## Q5
-Aluminum is highly abundant (~7% of Earth's crust) and is toxic to life (with rare exceptions). The predominant form it takes in solution is pH dependant, with the Al^(2+) ion the most toxic. We will cover the exact mechanism of this pH dependence later in the semester. For now, let's just try and observe the effect.
+### Part B:
+Fit two linear models, one to the data before and and the other after the passage of the Clean Air Act Amendments of 1990.Display your results using the 'summary()' function.
 
-### Part 1: 
-Pivot your data from long format, to wide.
 ```{r}
-cq_wide <- pivot_wider(cq, id_cols = c(datetime, site_code), names_from = var, values_from = val)
+# trim data
+cq_model <- cq %>%
+  filter(var == 'GN_pH') %>%
+  select(datetime, val) %>%
+  na.omit() %>%
+  mutate(post_cca = 1*(datetime>as.POSIXct('1990-11-15')))
+
+# calculate pre CCA
+pre_model <-lm(cq_model$val[cq_model$post_cca==0] ~ cq_model$datetime[cq_model$post_cca==0])
+
+summary(pre_model)
+
+# calculate post CCA
+post_model <-lm(cq_model$val[cq_model$post_cca==1] ~ cq_model$datetime[cq_model$post_cca==1])
+
+summary(post_model)
 ```
 
-### Part 2: 
+
+## Q5
+Aluminum is highly abundant (~7% of Earth's crust) and is toxic to life (with rare exceptions). The predominant form it takes in solution is pH dependent, with the Al^(2+) ion the most toxic to aquatic life. We will cover the exact mechanism of this pH dependence later in the semester. For now, let's just try and observe the effect. 
+
+### Part A: 
+Pivot your data from long format, to wide.
+```{r}
+cq_wide <- pivot_wider(cq, id_cols = c(datetime, site_code), 
+                       names_from = var, 
+                       values_from = val)
+```
+
+### Part B: 
 Make a scatterplot of Al vs pH. (Hint: the code for Al in this dataset is 'GN_Al_ICP')
 Make the figure look presentable, with labels, a title, and a descriptive caption. (Reminder: your final .html should *not* show warnings, messages, errors, etc.)
 ```{r}
@@ -114,18 +137,31 @@ ggplot(cq_wide, aes(x = GN_pH, y = GN_Al_ICP))+
 ```
 
 ## Q6
+
+### Part A:
 What is the effect of reducing acid rain on in aluminum toxicity in W6?
 
+### Part B:
+What other factors may be acting on as a control on aluminum at W6?
 
 
 ## Bonus Question
-Create a model describing the relationship between pH and Al at HBEF. Add a line of best fit and equation to the scatterplot from Q5.
+Create a model describing the relationship between pH and Al at HBEF (it is not simple linear). Add your model to the graph from Q5.
 ```{r}
-model <- lm(log(cq_wide$GN_Al_ICP)~cq_wide$GN_pH)
-summary(model)
+cq_model2 <- cq_wide %>%
+  select(GN_Al_ICP, GN_pH) %>%
+  na.omit()
+
+model2 <- lm(log10(cq_model2$GN_Al_ICP)~cq_model2$GN_pH)
+summary(model2)
+
+ggplot(cq_model2, aes(x = GN_pH, y = GN_Al_ICP))+
+    geom_point()+
+    scale_y_log10()+
+  geom_smooth(method = 'lm', 
+              formula = y ~ x,
+              se = T) +
+  labs(x = 'pH',
+       y = 'log([Al]) mg/l')
 
 ```
-
-
-
-
