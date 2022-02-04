@@ -1,0 +1,131 @@
+---
+title: "Acid Rain"
+author: "Nick Gubbins"
+date: "2/4/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(feather)
+```
+
+# Acid Rain
+
+## History of acid rain in the US
+
+## Hubbard Brook 
+
+https://hubbardbrook.org/watersheds/watershed-6
+
+## Solute export
+
+```{r}
+as.xts
+dygraph
+```
+
+
+# Working with files in R
+
+## The working directory
+
+## Reading in files
+
+## Long vs wide data
+
+# Assignment
+
+## Q0: 
+*If you're working on this from your own computer*, set your working directory to where this file's directory. Skip this question if you are working in the Rstudio cloud IDE. *This should be the last time either group uses a full file path in this assignment.*
+
+```{r}
+setwd("~/WR 418/WR-418-assignments/ph_2")
+```
+
+
+## Q1:
+Get your data into the R environment
+
+### Part A:
+Read in the the '.feather' data files for Q and stream chemistry at W6.
+
+```{r}
+q <- read_feather('data/w6_discharge.feather')
+chem <- read_feather('data/w6_chemistry.feather')
+
+```
+
+### Part B:
+Read in the file 'ws_traits.csv'.
+
+```{r}
+ws_traits <- read.csv('data/ws_traits.csv')
+```
+
+## Q2: 
+Make your data useful and understood.
+
+### Part 1:
+Combine the chemistry and discharge data objects. Remove the columns 'ms_status', 'ms_interp', and 'val_err'.
+
+```{r}
+cq <- rbind(chem, q) %>%
+    select(-c('ms_status', 'ms_interp','val_err'))
+```
+
+### Part 2:
+Describe (in text) the structure of your new, combined object. What are the columns and what do they contain? Is your data in a long or wide format? When does your dataset begin and end?
+
+### Part 3:
+Use the 'unique()' function to list all variables represented in the dataset.
+```{r}
+unique(cq$var)
+```
+
+
+## Q3:
+Plot a timeseries of pH at HBEF W6. (Hint: the code for pH in this dataset is 'GN_pH'.)
+
+```{r}
+ggplot(filter(cq, var == 'GN_pH'), aes(x = datetime, y = val))+
+    geom_line()
+    
+```
+
+## Q5
+Aluminum is highly abundant (~7% of Earth's crust) and is toxic to life (with rare exceptions). The predominant form it takes in solution is pH dependant, with the Al^(2+) ion the most toxic. We will cover the exact mechanism of this pH dependence later in the semester. For now, let's just try and observe the effect.
+
+### Part 1: 
+Pivot your data from long format, to wide.
+```{r}
+cq_wide <- pivot_wider(cq, id_cols = c(datetime, site_code), names_from = var, values_from = val)
+```
+
+### Part 2: 
+Make a scatterplot of Al vs pH. (Hint: the code for Al in this dataset is 'GN_Al_ICP')
+Make the figure look presentable, with labels, a title, and a descriptive caption. (Reminder: your final .html should *not* show warnings, messages, errors, etc.)
+```{r}
+ggplot(cq_wide, aes(x = GN_pH, y = GN_Al_ICP))+
+    geom_point()
+```
+
+## Q6
+What is the effect of reducing acid rain on in aluminum toxicity in W6?
+
+
+
+## Bonus Question
+Create a model describing the relationship between pH and Al at HBEF. Add a line of best fit and equation to the scatterplot from Q5.
+```{r}
+model <- lm(log(cq_wide$GN_Al_ICP)~cq_wide$GN_pH)
+summary(model)
+
+```
+
+
+
+
