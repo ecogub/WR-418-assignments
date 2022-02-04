@@ -111,6 +111,36 @@ head(cicero_long)
 
 ```
 
+## Fitting models in R
+while we won't be going into detail on modeling in the course, calculating 
+simple lines of best fit is a common tool in the sciences. Let's model the 
+relationship between gauge height and discharge in out model.
+
+First let's look at the data visually.
+```{r}
+ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
+         geom_point()
+```
+There's a pretty clear relationship there. Let's try a linear fit on it. To 
+make a simple **l**inear **m**odel (the classic y=mx+b), we use the function 
+'lm()'. Then the function 'summary()' to view the details.
+```{r}
+cicero_model <- lm(cicero$q_cfs ~ cicero$gh_ft)
+summary(cicero_model)
+```
+This output tells us our R-squared is 0.92, with a slope of 247 cfs/ft and an 
+intercept of -740 cfs. 
+
+We can replicate this in ggplot2 using geom_smooth.
+```{r, include = TRUE}
+ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
+        geom_point()+
+        geom_smooth(method = 'lm', forumla = y ~ x)
+```
+
+Ratings are more complicted than a simple linear relationship, so this line is 
+more than sensible.
+
 # Assignment
 
 ## Q0: 
