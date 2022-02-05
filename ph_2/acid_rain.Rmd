@@ -132,16 +132,23 @@ This output tells us our R-squared is 0.92, with a slope of 247 cfs/ft and an
 intercept of -740 cfs. 
 
 We can replicate this in ggplot2 using geom_smooth.
-```{r, include = TRUE}
+```{r, include = TRUE, warning=FALSE}
 ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
         geom_point()+
-        geom_smooth(method = 'lm', forumla = y ~ x)
+        scale_y_continuous()+
+        geom_smooth(method = 'lm')+
+  labs(x = 'Gauge Hieght (ft)',
+       y = 'Q (cfs)',
+       title = '033494510 Observed Rating')
 ```
 
-Ratings are more complicted than a simple linear relationship, so this line is 
-more than sensible.
+Ratings are more complicated than a simple linear relationship, so this line is 
+more than sensible. In this case the flows at gauge heights less than
+5 feet (when the stream is very shallow and the flow is very low) is skewing our line.
 
 # Assignment
+Assignment
+
 
 ## Q0: 
 **If you're working on this from your own computer**, set your working directory 
