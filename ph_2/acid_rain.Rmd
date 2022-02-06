@@ -67,11 +67,11 @@ same, but for a more efficient file format.
 To read in the file, we will supply the 'read_feather()' function the location 
 of the file relative to our working directory.
 ```{r, include = T}
-q <- read_feather('data/w6_discharge.feather')
-head(q)
+p_chem <- read_feather('data/w6_precip_chem.feather')
+head(p_chem)
 ```
 
-See how I didn't have to type out "C:/Users/gubbi/Dropbox/My PC (DESKTOP-RMMTJHU)/Documents/WR 418/WR-418-assignments/ph_2/data/w6_discharge.feather" again? 
+See how I didn't have to type out "C:/Users/gubbi/Dropbox/My PC (DESKTOP-RMMTJHU)/Documents/WR 418/WR-418-assignments/ph_2/data/" again? 
 This saves a lot of time and space in longer workflows and makes editing your 
 code much quicker.
 
@@ -135,7 +135,6 @@ We can replicate this in ggplot2 using geom_smooth.
 ```{r, include = TRUE, warning=FALSE}
 ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
         geom_point()+
-        scale_y_continuous()+
         geom_smooth(method = 'lm')+
   labs(x = 'Gauge Hieght (ft)',
        y = 'Q (cfs)',
@@ -145,6 +144,19 @@ ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
 Ratings are more complicated than a simple linear relationship, so this line is 
 more than sensible. In this case the flows at gauge heights less than
 5 feet (when the stream is very shallow and the flow is very low) is skewing our line.
+
+Let's look at the trend in rainwater pH at W6 since the clean air act amendments. 
+```{r}
+rain_ph <- p_chem %>%
+  filter(var == 'GN_pH') %>%
+  pivot_wider(id_cols = datetime,
+              names_from = var,
+              values_from = val) %>%
+  rename('ph' = GN_pH)
+ggplot(rain_ph, aes(x = datetime, y = ph)) +
+  geom_line()
+```
+
 
 # Assignment
 Assignment
@@ -217,7 +229,7 @@ ggplot(filter(cq, var == 'GN_pH'), aes(x = datetime, y = val, color = datetime>a
 ```
 
 ### Part B:
-Fit two linear models, one to the data before and and the other after the 
+Fit two linear models, one pH at W6 before and and the other after the 
 passage of the Clean Air Act Amendments of 1990.Display your results using the 
 'summary()' function.
 
