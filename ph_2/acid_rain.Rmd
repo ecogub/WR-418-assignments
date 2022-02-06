@@ -203,8 +203,6 @@ ggplot(post_ccaa, aes(x = datetime, y = ph)) +
 
 
 # Assignment
-Assignment
-
 
 ## Q0: 
 **If you're working on this from your own computer**, set your working directory 

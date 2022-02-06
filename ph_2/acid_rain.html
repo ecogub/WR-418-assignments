@@ -292,7 +292,7 @@ ggplot(rain_ph, aes(x = datetime, y = ph)) +
 <pre class="r"><code>#install.packages(&#39;trend&#39;)
 library(trend)
 ?mk.test()</code></pre>
-<p>Read the ‘details’ section of the manual page for this function. Some are very opaque and off in the land of math theory. But this one is very approachable. To test for a trend in pH, we will call the column using the</p>
+<p>Read the ‘details’ section of the manual page for this function. Some are very opaque and off in the land of math theory. But this one is very approachable. To test for a trend in pH, we will call the column using the ‘mk.test()’ function.</p>
 <pre class="r"><code>post_ccaa &lt;- rain_ph %&gt;%
   filter(datetime&gt;as.POSIXct(&#39;1990-11-15&#39;),
          !is.na(ph))
