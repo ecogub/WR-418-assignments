@@ -153,8 +153,52 @@ rain_ph <- p_chem %>%
               names_from = var,
               values_from = val) %>%
   rename('ph' = GN_pH)
+
 ggplot(rain_ph, aes(x = datetime, y = ph)) +
-  geom_line()
+  geom_line()+
+  labs(x = '',
+       y = 'pH (Precipitation)',
+       title = 'W6 - HBEF')
+```
+We'll use the 'trends' package to test for a trend after 11/15/1990 using a Mann-Kendall Trend test.
+
+```{r,include=TRUE, warning=FALSE,message=FALSE}
+#install.packages('trend')
+library(trend)
+?mk.test()
+```
+Read the 'details' section of the manual page for this function. Some are very opaque and off in the land of math theory. But this one is very approachable. To test for a trend in pH, we will call the column using the
+```{r,include=TRUE,warning=FALSE,message=FALSE}
+post_ccaa <- rain_ph %>%
+  filter(datetime>as.POSIXct('1990-11-15'),
+         !is.na(ph))
+
+ggplot(post_ccaa, aes(x = datetime, y = ph)) +
+  geom_line()+
+  labs(x = '',
+       y = 'pH (Precipitation)',
+       title = 'W6 - HBEF')
+
+mk.test(post_ccaa$ph)
+```
+This test gives strong statistical backing to the visually obvious trend. To find the strenght of the effect, we could test the correlation using a Sen's Slope Test (a common statistical test), 'sens.slope()' from the 'trend' package.
+```{r,include=TRUE,warning=FALSE,message=FALSE}
+?sens.slope()
+sens.slope(post_ccaa$ph)
+```
+The output confirms strong evidence for a reduction in rain acidity at WS following the Clean Air Act Amendments of 1990. Adding a simple linear model our timeseries plot is easy in ggplot2 using the 'geom_smooth()' function, declaring 'lm' for 'linear model' as our method. We can produce the same model using the function 'lm()' and can view it with 'summary()'.
+```{r,include=TRUE,warning=FALSE,message=FALSE}
+ggplot(post_ccaa, aes(x = datetime, y = ph)) +
+  geom_line()+
+  labs(x = '',
+       y = 'pH (Precipitation)',
+       title = 'W6 - HBEF')+
+  geom_smooth(method = 'lm',
+              formula = 'y ~ x')
+
+  model <- lm(post_ccaa$ph ~ post_ccaa$datetime)
+  summary(model)
+  
 ```
 
 
