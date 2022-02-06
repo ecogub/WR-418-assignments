@@ -86,6 +86,7 @@ can use the functions 'pivot_wider()' and 'pivot_longer()'.
 Here is an example of pivoting USGS data from wide to long. First, I'll 
 retrieve the gauge height (local water elevation) and discharge data from a 
 favorite gauge of mine, Cicero Creek at Arcadia, IN.
+
 ```{r, include=TRUE}
 cicero <- readNWISuv(siteNumbers = '03349510',
                      parameterCd = c('00060', '00065'),
@@ -101,6 +102,7 @@ Next, I will use 'pivot_longer()'. The 'cols' argument denotes what to pivot
 (in this case everything but the dateTime column), the 'names_to' is the new 
 column to put the old column names as values, and the 'values_to' argument is 
 the new column to put the old column values in. 'Pivot_wider()' works in a similar way.
+
 ```{r, include=TRUE}
 cicero_long <- cicero %>%
   pivot_longer(cols = -dateTime,
@@ -117,21 +119,27 @@ simple lines of best fit is a common tool in the sciences. Let's model the
 relationship between gauge height and discharge in out model.
 
 First let's look at the data visually.
+
 ```{r}
 ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
          geom_point()
 ```
+
 There's a pretty clear relationship there. Let's try a linear fit on it. To 
 make a simple **l**inear **m**odel (the classic y=mx+b), we use the function 
 'lm()'. Then the function 'summary()' to view the details.
+
 ```{r}
 cicero_model <- lm(cicero$q_cfs ~ cicero$gh_ft)
+#str(cicero_model)
 summary(cicero_model)
 ```
+
 This output tells us our R-squared is 0.92, with a slope of 247 cfs/ft and an 
 intercept of -740 cfs. 
 
 We can replicate this in ggplot2 using geom_smooth.
+
 ```{r, include = TRUE, warning=FALSE}
 ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
         geom_point()+
@@ -146,6 +154,7 @@ more than sensible. In this case the flows at gauge heights less than
 5 feet (when the stream is very shallow and the flow is very low) is skewing our line.
 
 Let's look at the trend in rainwater pH at W6 since the clean air act amendments. 
+
 ```{r}
 rain_ph <- p_chem %>%
   filter(var == 'GN_pH') %>%
@@ -160,14 +169,20 @@ ggplot(rain_ph, aes(x = datetime, y = ph)) +
        y = 'pH (Precipitation)',
        title = 'W6 - HBEF')
 ```
-We'll use the 'trends' package to test for a trend after 11/15/1990 using a Mann-Kendall Trend test.
+
+We'll use the 'trends' package to test for a trend after 11/15/1990 using a
+Mann-Kendall Trend test.
 
 ```{r,include=TRUE, warning=FALSE,message=FALSE}
 #install.packages('trend')
 library(trend)
 ?mk.test()
 ```
-Read the 'details' section of the manual page for this function. Some are very opaque and off in the land of math theory. But this one is very approachable. To test for a trend in pH, we will call the column using the 'mk.test()' function.
+
+Read the 'details' section of the manual page for this function. Some are very 
+opaque and off in the land of math theory. But this one is very approachable.
+To test for a trend in pH, we will call the column using the 'mk.test()' function.
+
 ```{r,include=TRUE,warning=FALSE,message=FALSE}
 post_ccaa <- rain_ph %>%
   filter(datetime>as.POSIXct('1990-11-15'),
@@ -181,12 +196,23 @@ ggplot(post_ccaa, aes(x = datetime, y = ph)) +
 
 mk.test(post_ccaa$ph)
 ```
-This test gives strong statistical backing to the visually obvious trend. To find the strenght of the effect, we could test the correlation using a Sen's Slope Test (a common statistical test), 'sens.slope()' from the 'trend' package.
+
+This test gives strong statistical backing to the visually obvious trend. 
+To find the strenght of the effect, we could test the correlation using a 
+Sen's Slope Test (a common statistical test), 'sens.slope()' from the 'trend'
+package.
+
 ```{r,include=TRUE,warning=FALSE,message=FALSE}
 ?sens.slope()
 sens.slope(post_ccaa$ph)
 ```
-The output confirms strong evidence for a reduction in rain acidity at WS following the Clean Air Act Amendments of 1990. Adding a simple linear model our timeseries plot is easy in ggplot2 using the 'geom_smooth()' function, declaring 'lm' for 'linear model' as our method. We can produce the same model using the function 'lm()' and can view it with 'summary()'.
+
+The output confirms strong evidence for a reduction in rain acidity at WS 
+following the Clean Air Act Amendments of 1990. Adding a simple linear model 
+our timeseries plot is easy in ggplot2 using the 'geom_smooth()' function, 
+declaring 'lm' for 'linear model' as our method. We can produce the same model 
+using the function 'lm()' and can view it with 'summary()'.
+
 ```{r,include=TRUE,warning=FALSE,message=FALSE}
 ggplot(post_ccaa, aes(x = datetime, y = ph)) +
   geom_line()+
