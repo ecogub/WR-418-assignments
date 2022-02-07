@@ -115,7 +115,7 @@ relationship between gauge height and discharge in out model.
 
 First let's look at the data visually.
 
-```{r}
+```{r, warning=FALSE, message = FALSE}
 ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
          geom_point()
 ```
@@ -124,7 +124,7 @@ There's a pretty clear relationship there. Let's try a linear fit on it. To
 make a simple **l**inear **m**odel (the classic y=mx+b), we use the function 
 'lm()'. Then the function 'summary()' to view the details.
 
-```{r}
+```{r, warning=FALSE, message = FALSE}
 cicero_model <- lm(cicero$q_cfs ~ cicero$gh_ft)
 #str(cicero_model)
 summary(cicero_model)
@@ -135,7 +135,7 @@ intercept of -740 cfs.
 
 We can replicate this in ggplot2 using geom_smooth.
 
-```{r, include = TRUE, warning=FALSE}
+```{r, include = TRUE, , warning=FALSE, message = FALSE}
 ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
         geom_point()+
         geom_smooth(method = 'lm')+
@@ -150,7 +150,7 @@ more than sensible. In this case the flows at gauge heights less than
 
 Let's look at the trend in rainwater pH at W6 since the clean air act amendments. 
 
-```{r}
+```{r, warning=FALSE, message = FALSE}
 rain_ph <- p_chem %>%
   filter(var == 'GN_pH') %>%
   pivot_wider(id_cols = datetime,
@@ -229,7 +229,7 @@ ggplot(post_ccaa, aes(x = datetime, y = ph)) +
 Call the 'here()' function to check your working directory.
 
 ```{r}
-
+here()
 ```
 
 
