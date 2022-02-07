@@ -1,7 +1,7 @@
 ---
 title: "Acid Rain"
 author: "Nick Gubbins"
-date: "2/4/2022"
+date: "2/8/2022"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -9,6 +9,8 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#install.packages('here')
+library(here)
 library(tidyverse)
 library(feather)
 library(dataRetrieval)
@@ -30,50 +32,42 @@ long-term effects of these efforts [in this informative paper.](https://www.esf.
 The [Hubbard Brook Experimental Forest (HBEF)](https://hubbardbrook.org/hubbard-brook-research-focus) is a long-running ecosystem 
 study located in New Hampshire.The study has several small streams running 
 through forested watersheds. Different treatments have been applied to some of 
-the watersheds, but this unit we will be looking at a reference site, [watershed 6](https://hubbardbrook.org/watersheds/watershed-6). W6 is located in the industrail Northeast of the US and has a record beginning in 1963, making it ideal to observe the effects of acid rain.
+the watersheds, but this unit we will be looking at a reference site, [watershed 6](https://hubbardbrook.org/watersheds/watershed-6). W6 is located in the industrial Northeast of the US and has a record beginning in 1963, making it ideal to observe the effects of acid rain.
 
 
 # Working with files in R
 
-## The working directory
-When referencing file paths in R, it is important to know what directory you 
-are working in. A directory is just another name for folder level. 
+## File paths and directories
+R needs to know where files are in order to interact with them. The old method, 
+that folks with R experience may know, is using the functions 'getwd()' and 
+'setwd()'. Those folks will also be happy to know that there is a better way!
 
-Let's check ours now.
-
-```{r, include = T}
-getwd()
-```
-
-When working with data files, it's convenient to set our working directory. This
-lets us use relative file paths when referencing files moving forward. It also
-makes it easier for others to use our code. They will only need to change one
-line to use our data structure on their computer. To do so, we use the function
-'setwd()', giving the function the file path of the script. In my case it's
-a little convoluted due to Dropbox. Yours will likely be shorter.
+Using 'projects' in Rstudio, we can have Rstudio track where we are when the 
+Rmd is opened. This is stored in the '.Rproj' file in your files. 
+**Take a second to check the top right corner of your screen.**
+There should be a small blue box with an 'R' in it and the name of a project. We
+can check that R knows where we are with the 'here()' function.
 
 ```{r, include = T}
-setwd("C:/Users/gubbi/Dropbox/My PC (DESKTOP-RMMTJHU)/Documents/WR 418/WR-418-assignments/ph_2")
+here()
 ```
 
+Projects make sharing scripts and sheets with complicated file structures much,
+much smoother.
 
 ## Reading in files
-Now that our working directory is set, we can read in our data files. The files
+Now that we confirmed Rstudio knows where it is, we can read in our data files. The files
 we are using have been downloaded from [Macrosheds](macrosheds.org), which uses
 a file format called 'feather'. For those of you that have used R before, you 
 are probably familiar with the function 'read.csv()'. This works basically the
 same, but for a more efficient file format. 
 
 To read in the file, we will supply the 'read_feather()' function the location 
-of the file relative to our working directory.
+of the file relative to our project file.
 ```{r, include = T}
 p_chem <- read_feather('data/w6_precip_chem.feather')
 head(p_chem)
 ```
-
-See how I didn't have to type out "C:/Users/gubbi/Dropbox/My PC (DESKTOP-RMMTJHU)/Documents/WR 418/WR-418-assignments/ph_2/data/" again? 
-This saves a lot of time and space in longer workflows and makes editing your 
-code much quicker.
 
 ## Long vs wide data
 There are many different ways data can be stored. One simple data dichotomy is 
@@ -96,6 +90,7 @@ cicero <- readNWISuv(siteNumbers = '03349510',
          gh_ft = 'X_00065_00000') %>%
   select(dateTime, gh_ft, q_cfs)
 
+head(cicero)
 ```
 
 Next, I will use 'pivot_longer()'. The 'cols' argument denotes what to pivot 
@@ -231,13 +226,10 @@ ggplot(post_ccaa, aes(x = datetime, y = ph)) +
 # Assignment
 
 ## Q0: 
-**If you're working on this from your own computer**, set your working directory 
-to where this file's directory. Skip this question if you are working in the 
-Rstudio cloud IDE as it has already been done for you. **This should be the last** 
-**time either group uses a full file path in this assignment.**
+Call the 'here()' function to check your working directory.
 
 ```{r}
-setwd("~/WR 418/WR-418-assignments/ph_2")
+
 ```
 
 
