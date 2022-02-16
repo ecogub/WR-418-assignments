@@ -1,0 +1,327 @@
+---
+title: "Acid Rain"
+author: "Nick Gubbins"
+date: "2/8/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages('here')
+library(here)
+library(tidyverse)
+library(feather)
+library(dataRetrieval)
+```
+
+# Acid Rain
+
+While rain is naturally acidic due to the carbonation of water (more on that 
+later in the semester), a polluted atmosphere can increase the acidity of 
+rainfall. Adding acid to a land surface can displace soil cations and change 
+solute chemistry in downstream waterways. Burning fossil fuels was, and is,
+major source of air pollution. The [Clean Air Act Amendments of 1990](https://www.epa.gov/sites/default/files/2015-11/documents/the_clean_air_act_-_highlights_of_the_1990_amendments.pdf) were instrumental in tackling polluted air in the US. The amendments capped total
+emissions of acidic nitrogen oxides and sulfur dioxides, establishing a 
+tradeable, emissions credit pool for power plants. You can read more about the 
+long-term effects of these efforts [in this informative paper.](https://www.esf.edu/efb/mitchell/Class%20Readings/Nat.401.575.578.pdf)
+
+## Hubbard Brook 
+
+The [Hubbard Brook Experimental Forest (HBEF)](https://hubbardbrook.org/hubbard-brook-research-focus) is a long-running ecosystem 
+study located in New Hampshire.The study has several small streams running 
+through forested watersheds. Different treatments have been applied to some of 
+the watersheds, but this unit we will be looking at a reference site, [watershed 6](https://hubbardbrook.org/watersheds/watershed-6). W6 is located in the industrial Northeast of the US and has a record beginning in 1963, making it ideal to observe the effects of acid rain.
+
+
+# Working with files in R
+
+## File paths and directories
+R needs to know where files are in order to interact with them. The old method, 
+that folks with R experience may know, is using the functions 'getwd()' and 
+'setwd()'. Those folks will also be happy to know that there is a better way!
+
+Using 'projects' in Rstudio, we can have Rstudio track where we are when the 
+Rmd is opened. This is stored in the '.Rproj' file in your files. 
+**Take a second to check the top right corner of your screen.**
+There should be a small blue box with an 'R' in it and the name of a project. We
+can check that R knows where we are with the 'here()' function.
+
+```{r, include = T}
+here()
+```
+
+Projects make sharing scripts and sheets with complicated file structures much,
+much smoother.
+
+## Reading in files
+Now that we confirmed Rstudio knows where it is, we can read in our data files. The files
+we are using have been downloaded from [Macrosheds](macrosheds.org), which uses
+a file format called 'feather'. For those of you that have used R before, you 
+are probably familiar with the function 'read.csv()'. This works basically the
+same, but for a more efficient file format. 
+
+To read in the file, we will supply the 'read_feather()' function the location 
+of the file relative to our project file.
+```{r, include = T}
+p_chem <- read_feather('data/w6_precip_chem.feather')
+head(p_chem)
+```
+
+## Long vs wide data
+There are many different ways data can be stored. One simple data dichotomy is 
+wide vs long. Wide data has many columns, usually with each variable in a 
+column. The data retrieved from the USGS is in wide format. Long data has 
+many rows, with a column of variables describing other values. The data 
+downloaded from Macrosheds comes in a long format. To switch between them we 
+can use the functions 'pivot_wider()' and 'pivot_longer()'. 
+
+Here is an example of pivoting USGS data from wide to long. First, I'll 
+retrieve the gauge height (local water elevation) and discharge data from a 
+favorite gauge of mine, Cicero Creek at Arcadia, IN.
+
+```{r, include=TRUE}
+cicero <- readNWISuv(siteNumbers = '03349510',
+                     parameterCd = c('00060', '00065'),
+                     startDate = '2017-10-01',
+                     endDate = '2018-9-30') %>% 
+  rename(q_cfs = 'X_00060_00000',
+         gh_ft = 'X_00065_00000') %>%
+  select(dateTime, gh_ft, q_cfs)
+
+head(cicero)
+```
+
+Next, I will use 'pivot_longer()'. The 'cols' argument denotes what to pivot 
+(in this case everything but the dateTime column), the 'names_to' is the new 
+column to put the old column names as values, and the 'values_to' argument is 
+the new column to put the old column values in. 'Pivot_wider()' works in a similar way.
+
+```{r, include=TRUE}
+cicero_long <- cicero %>%
+  pivot_longer(cols = -dateTime,
+               names_to = 'var',
+               values_to = 'val')
+
+head(cicero_long)
+
+```
+
+## Fitting models in R
+while we won't be going into detail on modeling in the course, calculating 
+simple lines of best fit is a common tool in the sciences. Let's model the 
+relationship between gauge height and discharge in out model.
+
+First let's look at the data visually.
+
+```{r, warning=FALSE, message = FALSE}
+ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
+         geom_point()
+```
+
+There's a pretty clear relationship there. Let's try a linear fit on it. To 
+make a simple **l**inear **m**odel (the classic y=mx+b), we use the function 
+'lm()'. Then the function 'summary()' to view the details.
+
+```{r, warning=FALSE, message = FALSE}
+cicero_model <- lm(cicero$q_cfs ~ cicero$gh_ft)
+#str(cicero_model)
+summary(cicero_model)
+```
+
+This output tells us our R-squared is 0.92, with a slope of 247 cfs/ft and an 
+intercept of -740 cfs. 
+
+We can replicate this in ggplot2 using geom_smooth.
+
+```{r, include = TRUE, , warning=FALSE, message = FALSE}
+ggplot(cicero, aes(x = gh_ft, y = q_cfs))+
+        geom_point()+
+        geom_smooth(method = 'lm')+
+  labs(x = 'Gauge Hieght (ft)',
+       y = 'Q (cfs)',
+       title = '033494510 Observed Rating')
+```
+
+Ratings are more complicated than a simple linear relationship, so this line is 
+more than sensible. In this case the flows at gauge heights less than
+5 feet (when the stream is very shallow and the flow is very low) is skewing our line.
+
+Let's look at the trend in rainwater pH at W6 since the clean air act amendments. 
+
+```{r, warning=FALSE, message = FALSE}
+rain_ph <- p_chem %>%
+  filter(var == 'GN_pH') %>%
+  pivot_wider(id_cols = datetime,
+              names_from = var,
+              values_from = val) %>%
+  rename('ph' = GN_pH)
+
+ggplot(rain_ph, aes(x = datetime, y = ph)) +
+  geom_line()+
+  labs(x = '',
+       y = 'pH (Precipitation)',
+       title = 'W6 - HBEF')
+```
+
+We'll use the 'trends' package to test for a trend after 11/15/1990 using a
+Mann-Kendall Trend test.
+
+```{r,include=TRUE, warning=FALSE,message=FALSE}
+#install.packages('trend')
+library(trend)
+?mk.test()
+```
+
+Read the 'details' section of the manual page for this function. Some are very 
+opaque and off in the land of math theory. But this one is very approachable.
+To test for a trend in pH, we will call the column using the 'mk.test()' function.
+
+```{r,include=TRUE,warning=FALSE,message=FALSE}
+post_ccaa <- rain_ph %>%
+  filter(datetime>as.POSIXct('1990-11-15'),
+         !is.na(ph))
+
+ggplot(post_ccaa, aes(x = datetime, y = ph)) +
+  geom_line()+
+  labs(x = '',
+       y = 'pH (Precipitation)',
+       title = 'W6 - HBEF')
+
+mk.test(post_ccaa$ph)
+```
+
+This test gives strong statistical backing to the visually obvious trend. 
+To find the strenght of the effect, we could test the correlation using a 
+Sen's Slope Test (a common statistical test), 'sens.slope()' from the 'trend'
+package.
+
+```{r,include=TRUE,warning=FALSE,message=FALSE}
+?sens.slope()
+sens.slope(post_ccaa$ph)
+```
+
+The output confirms strong evidence for a reduction in rain acidity at WS 
+following the Clean Air Act Amendments of 1990. Adding a simple linear model 
+our timeseries plot is easy in ggplot2 using the 'geom_smooth()' function, 
+declaring 'lm' for 'linear model' as our method. We can produce the same model 
+using the function 'lm()' and can view it with 'summary()'.
+
+```{r,include=TRUE,warning=FALSE,message=FALSE}
+ggplot(post_ccaa, aes(x = datetime, y = ph)) +
+  geom_line()+
+  labs(x = '',
+       y = 'pH (Precipitation)',
+       title = 'W6 - HBEF')+
+  geom_smooth(method = 'lm',
+              formula = 'y ~ x')
+
+  model <- lm(post_ccaa$ph ~ post_ccaa$datetime)
+  summary(model)
+  
+```
+
+
+# Assignment
+
+## Q0: 
+Call the 'here()' function to check your working directory.
+
+```{r}
+
+```
+
+
+## Q1:
+Read in the the '.feather' data files for Q and stream chemistry at W6.
+
+```{r}
+
+
+```
+
+## Q2: 
+Make your data useful and understood.
+
+### Part A:
+Combine the chemistry and discharge data objects. Remove the columns 'ms_status'
+, 'ms_interp', and 'val_err' (these are data quality flags we won't be using now).
+(Hint: look into the ['bind'](https://stat.ethz.ch/R-manual/R-devel/library/base/html/cbind.html) functions.)
+
+```{r}
+
+```
+
+### Part B:
+Describe (in text) the structure of your new, combined object. What are the 
+columns and what do they contain? Is your data in a long or wide format? When 
+does your dataset begin and end?
+
+### Part C:
+Use the 'unique()' function to list all variables represented in the dataset.
+```{r}
+
+```
+
+
+## Q3:
+
+### Part A:
+Plot a timeseries of pH at HBEF W6. Color the data by whether it is pre or post
+Clean Air Act Amendments of 1990, or use a vertical line to denote its passage.
+Make the figure look presentable, with labels, a title, and a descriptive 
+caption.(Hint: the code for pH in this dataset is 'GN_pH'.)
+
+
+```{r}
+    
+```
+
+### Part B:
+Fit two linear models, one pH at W6 before and and the other after the 
+passage of the Clean Air Act Amendments of 1990.Display your results using the 
+'summary()' function.
+
+```{r}
+
+```
+
+### Part C:
+Briefly interpret your model outputs in context.
+
+## Q5
+Aluminum is highly abundant (~7% of Earth's crust) and is toxic to life. The 
+predominant form it takes in solution is pH dependent, with the Al^(3+) ion the
+most toxic to aquatic life. We will cover the exact mechanism of this pH 
+dependence later in the semester. For now, let's just try and observe the effect. 
+
+### Part A: 
+Pivot your data from long format, to wide.
+```{r}
+
+```
+
+### Part B: 
+Make a scatterplot of Al vs pH. (Hint: the code for Al in this dataset is 'GN_Al_ICP')
+Make the figure look presentable, with labels, a title, and a descriptive caption. 
+(Reminder: your final .html should *not* show warnings, messages, errors, etc.)
+```{r}
+
+```
+
+## Q6
+
+### Part A:
+What is the effect of reducing acid rain on in aluminum toxicity in W6?
+
+### Part B:
+What other factors may be acting on as a control on aluminum at W6?
+
+
+## Bonus Question
+Create a model describing the relationship between pH and Al at HBEF (it is not
+simple linear). Add your model to the graph from Q5.
+```{r}
+
+```
