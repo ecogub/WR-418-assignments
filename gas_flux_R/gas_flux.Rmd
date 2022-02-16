@@ -1,0 +1,40 @@
+---
+title: "Gas Flux"
+author: "Nick Gubbins"
+date: "2/16/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages('stream')
+library(here)
+library(tidyverse)
+library(dataRetrieval)
+library(StreamMetabolism)
+```
+
+# Aquatic Gases
+
+## Oxygen
+
+## Greenhouses
+
+# What the flux?
+
+## How to estimate gas flux
+
+## Estimating **k**
+
+## Sources and sinks
+
+# Assignment 
+
+## Q0:
+
+Just like last time, let's make sure R knows where we are. Call 'here()' to check.
+
+```{r}
+here()
+```
+
