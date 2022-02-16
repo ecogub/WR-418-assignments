@@ -45,8 +45,9 @@ that folks with R experience may know, is using the functions 'getwd()' and
 Using 'projects' in Rstudio, we can have Rstudio track where we are when the 
 Rmd is opened. This is stored in the '.Rproj' file in your files. 
 **Take a second to check the top right corner of your screen.**
-There should be a small blue box with an 'R' in it and the name of a project. We
-can check that R knows where we are with the 'here()' function.
+There should be a small blue box with an 'R' in it and the name of a project (this
+will not be there on Rstudio cloud). We can check that R knows where we are with
+the 'here()' function.
 
 ```{r, include = T}
 here()
@@ -237,7 +238,6 @@ Call the 'here()' function to check your working directory.
 Read in the the '.feather' data files for Q and stream chemistry at W6.
 
 ```{r}
-
 
 ```
 
