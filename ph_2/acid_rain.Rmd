@@ -45,8 +45,9 @@ that folks with R experience may know, is using the functions 'getwd()' and
 Using 'projects' in Rstudio, we can have Rstudio track where we are when the 
 Rmd is opened. This is stored in the '.Rproj' file in your files. 
 **Take a second to check the top right corner of your screen.**
-There should be a small blue box with an 'R' in it and the name of a project. We
-can check that R knows where we are with the 'here()' function.
+There should be a small blue box with an 'R' in it and the name of a project (this
+will not be there on Rstudio cloud). We can check that R knows where we are with
+the 'here()' function.
 
 ```{r, include = T}
 here()
@@ -229,7 +230,7 @@ ggplot(post_ccaa, aes(x = datetime, y = ph)) +
 Call the 'here()' function to check your working directory.
 
 ```{r}
-here()
+
 ```
 
 
@@ -237,8 +238,6 @@ here()
 Read in the the '.feather' data files for Q and stream chemistry at W6.
 
 ```{r}
-q <- read_feather('data/w6_discharge.feather')
-chem <- read_feather('data/w6_chemistry.feather')
 
 ```
 
@@ -251,8 +250,7 @@ Combine the chemistry and discharge data objects. Remove the columns 'ms_status'
 (Hint: look into the ['bind'](https://stat.ethz.ch/R-manual/R-devel/library/base/html/cbind.html) functions.)
 
 ```{r}
-cq <- rbind(chem, q) %>%
-    select(-c('ms_status', 'ms_interp','val_err'))
+
 ```
 
 ### Part B:
@@ -263,7 +261,7 @@ does your dataset begin and end?
 ### Part C:
 Use the 'unique()' function to list all variables represented in the dataset.
 ```{r}
-unique(cq$var)
+
 ```
 
 
@@ -277,14 +275,7 @@ caption.(Hint: the code for pH in this dataset is 'GN_pH'.)
 
 
 ```{r}
-ggplot(filter(cq, var == 'GN_pH'), aes(x = datetime, y = val, color = datetime>as.POSIXct('1990-11-15')))+
-    geom_line()+
-    labs(y = 'W6 Stream pH',
-         x = '',
-         color = 'Clean Air Act Amendments of 1990')+
-  scale_color_manual(values = c('black', 'red'),
-                     labels = c('Pre', 'Post'))+
-  theme(legend.position = 'bottom')
+
     
 ```
 
@@ -294,22 +285,7 @@ passage of the Clean Air Act Amendments of 1990.Display your results using the
 'summary()' function.
 
 ```{r}
-# trim data
-cq_model <- cq %>%
-  filter(var == 'GN_pH') %>%
-  select(datetime, val) %>%
-  na.omit() %>%
-  mutate(post_cca = 1*(datetime>as.POSIXct('1990-11-15')))
 
-# calculate pre CCA
-pre_model <-lm(cq_model$val[cq_model$post_cca==0] ~ cq_model$datetime[cq_model$post_cca==0])
-
-summary(pre_model)
-
-# calculate post CCA
-post_model <-lm(cq_model$val[cq_model$post_cca==1] ~ cq_model$datetime[cq_model$post_cca==1])
-
-summary(post_model)
 ```
 
 ### Part C:
@@ -324,9 +300,7 @@ dependence later in the semester. For now, let's just try and observe the effect
 ### Part A: 
 Pivot your data from long format, to wide.
 ```{r}
-cq_wide <- pivot_wider(cq, id_cols = c(datetime, site_code), 
-                       names_from = var, 
-                       values_from = val)
+
 ```
 
 ### Part B: 
@@ -334,8 +308,7 @@ Make a scatterplot of Al vs pH. (Hint: the code for Al in this dataset is 'GN_Al
 Make the figure look presentable, with labels, a title, and a descriptive caption. 
 (Reminder: your final .html should *not* show warnings, messages, errors, etc.)
 ```{r}
-ggplot(cq_wide, aes(x = GN_pH, y = GN_Al_ICP))+
-    geom_point()
+
 ```
 
 ## Q6
@@ -351,20 +324,6 @@ What other factors may be acting on as a control on aluminum at W6?
 Create a model describing the relationship between pH and Al at HBEF (it is not
 simple linear). Add your model to the graph from Q5.
 ```{r}
-cq_model2 <- cq_wide %>%
-  select(GN_Al_ICP, GN_pH) %>%
-  na.omit()
 
-model2 <- lm(log10(cq_model2$GN_Al_ICP)~cq_model2$GN_pH)
-summary(model2)
-
-ggplot(cq_model2, aes(x = GN_pH, y = GN_Al_ICP))+
-    geom_point()+
-    scale_y_log10()+
-  geom_smooth(method = 'lm', 
-              formula = y ~ x,
-              se = T) +
-  labs(x = 'pH',
-       y = 'log([Al]) mg/l')
 
 ```
