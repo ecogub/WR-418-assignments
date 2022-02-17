@@ -14,6 +14,7 @@ library(here)
 library(tidyverse)
 library(dataRetrieval)
 library(lubridate)
+library(trend)
 ```
 
 # Aquatic Gases
@@ -90,7 +91,6 @@ quantile(gas$methane_ppm, .15)
 min(gas$methane_ppm)
 ```
 
-
 ### Part B
 To estimate **k** we need to extract the sharp rises from the data, as this is
 when the chamber is still reaching equilibrium. After a a certain point, the air
@@ -99,7 +99,8 @@ fluctuations in methane concentrations. We will also want to filter data while
 the chamber is in the air. 
 
 Filter your data to only the sharp rises, before the chamber begins to saturate,
-and after it has been placed on the water surface.
+and after it has been placed on the water surface. (Hint: this can either be
+done through times, values, and/or a new index.)
 
 ```{r}
 rises <- gas %>%
@@ -109,9 +110,10 @@ rises <- gas %>%
          methane_ppm < 10)
 ```
 
-## Part B
+### Part C
 
-Plot your new, filtered dataset.
+Plot your new, filtered dataset. Don't worry about making your plot too pretty,
+just basic labels is fine.
 
 ```{r}
 ggplot(rises, aes(x = time, y = methane_ppm))+
@@ -119,6 +121,35 @@ ggplot(rises, aes(x = time, y = methane_ppm))+
   labs(x = 'Time', y = 'CH4 (ppm)')
 ```
 
+### Part D
 
+Find the slope of each segment using a Sen's slope test (Hint: look at the Acid
+Rain homework for an example of this.)
+
+```{r}
+rises <- rises %>%
+  mutate(flag = if_else(time < as.POSIXct('2014-06-03 11:15', tz = 'UTC'), 1,
+                        if_else(time > as.POSIXct('2014-06-03 11:25', tz = 'UTC'), 3, 2)))
+
+m1 <- rises %>%
+  filter(flag == 1) %>%
+  na.omit() 
+
+m2 <- rises %>%
+  filter(flag == 2)
+
+m3 <- rises %>%
+  filter(flag == 3)
+
+sens.slope(m1$methane_ppm)
+sens.slope(m2$methane_ppm)
+sens.slope(m3$methane_ppm)
+
+```
+
+### Part E
+
+You run a water sample from the surface of the Yahara alongisde your chamber
+measurement and find the 
 
 
