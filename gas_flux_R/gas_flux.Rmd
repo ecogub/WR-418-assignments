@@ -3,6 +3,8 @@ title: "Gas Flux"
 author: "Nick Gubbins"
 date: "2/16/2022"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(tidyverse)
 library(dataRetrieval)
-library(StreamMetabolism)
+library(lubridate)
 ```
 
 # Aquatic Gases
@@ -32,9 +34,91 @@ library(StreamMetabolism)
 
 ## Q0:
 
-Just like last time, let's make sure R knows where we are. Call 'here()' to check.
+Just like last time, let's make sure R knows where we are working. Call 'here()' to check.
 
 ```{r}
 here()
 ```
+
+## Q1
+
+
+
+### Part A
+
+Read in the 'gga_03Jun2014_f0000.txt' file from the 'data' folder. Reduce your data to only chamber methane concentrations and datetime. 
+
+```{r}
+gas <- read.csv('data/gga_03Jun2014_f0000.txt', skip = 1) %>%
+  filter(!is.na(X.CH4._ppm)) %>%
+  mutate(Time = mdy_hms(Time)) %>%
+  select(time = Time, methane_ppm = X.CH4._ppm)
+```
+
+### Part B
+
+Plot your data as a time series with appropriate labels. 
+
+```{r}
+ggplot(gas, aes(x = time, y = methane_ppm))+
+  geom_point()+
+  labs(x = 'Time', y = 'CH4 (ppm)')
+```
+
+### Part C
+
+How many estimates of **k** can we make with our data? In other words, how many
+times did the technician raise and lower the chamber?
+
+## Q2
+
+Let's try to estimate **k** on our own for the Yahara.
+
+### Part A
+
+To estimate **k** we will fit linear models to the curve right after the chamber
+has been set on the water surface and the methane is diffusing at a steady rate.
+
+The first step in doing so is excluding data from when the chamber is hanging in
+the air. This is also useful as a local, atmospheric methane measurement.
+
+Calculate a reasonable 'baseline' methane concentration for your data.
+
+```{r}
+quantile(gas$methane_ppm, .15)
+# or
+min(gas$methane_ppm)
+```
+
+
+### Part B
+To estimate **k** we need to extract the sharp rises from the data, as this is
+when the chamber is still reaching equilibrium. After a a certain point, the air
+in the chamber will begin to saturate. This will appear in the time series as 
+fluctuations in methane concentrations. We will also want to filter data while
+the chamber is in the air. 
+
+Filter your data to only the sharp rises, before the chamber begins to saturate,
+and after it has been placed on the water surface.
+
+```{r}
+rises <- gas %>%
+  mutate(diff = methane_ppm-lag(methane_ppm)) %>%
+  filter(diff > 0,
+         methane_ppm > 2.5,
+         methane_ppm < 10)
+```
+
+## Part B
+
+Plot your new, filtered dataset.
+
+```{r}
+ggplot(rises, aes(x = time, y = methane_ppm))+
+  geom_point()+
+  labs(x = 'Time', y = 'CH4 (ppm)')
+```
+
+
+
 
