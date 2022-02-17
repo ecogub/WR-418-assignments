@@ -27,7 +27,7 @@ library(trend)
 
 ## How to estimate gas flux
 
-## Estimating **k**
+## Estimating *k*
 
 ## Sources and sinks
 
@@ -68,16 +68,16 @@ ggplot(gas, aes(x = time, y = methane_ppm))+
 
 ### Part C
 
-How many estimates of **k** can we make with our data? In other words, how many
+How many estimates of *k* can we make with our data? In other words, how many
 times did the technician raise and lower the chamber?
 
 ## Q2
 
-Let's try to estimate **k** on our own for the Yahara.
+Let's try to estimate *k* on our own for the Yahara.
 
 ### Part A
 
-To estimate **k** we will fit linear models to the curve right after the chamber
+To estimate *k* we will fit linear models to the curve right after the chamber
 has been set on the water surface and the methane is diffusing at a steady rate.
 
 The first step in doing so is excluding data from when the chamber is hanging in
@@ -86,13 +86,14 @@ the air. This is also useful as a local, atmospheric methane measurement.
 Calculate a reasonable 'baseline' methane concentration for your data.
 
 ```{r}
-quantile(gas$methane_ppm, .15)
+atmo <- quantile(gas$methane_ppm, .15)
+atmo
 # or
 min(gas$methane_ppm)
 ```
 
 ### Part B
-To estimate **k** we need to extract the sharp rises from the data, as this is
+To estimate *k* we need to extract the sharp rises from the data, as this is
 when the chamber is still reaching equilibrium. After a a certain point, the air
 in the chamber will begin to saturate. This will appear in the time series as 
 fluctuations in methane concentrations. We will also want to filter data while
@@ -123,7 +124,7 @@ ggplot(rises, aes(x = time, y = methane_ppm))+
 
 ### Part D
 
-Find the slope of each segment using a Sen's slope test (Hint: look at the Acid
+Find the slope of each segment using a Sen's slope test. (Hint: look at the Acid
 Rain homework for an example of this.)
 
 ```{r}
@@ -141,15 +142,56 @@ m2 <- rises %>%
 m3 <- rises %>%
   filter(flag == 3)
 
-sens.slope(m1$methane_ppm)
-sens.slope(m2$methane_ppm)
-sens.slope(m3$methane_ppm)
-
+s1 <- sens.slope(m1$methane_ppm)
+s2 <- sens.slope(m2$methane_ppm)
+s3 <- sens.slope(m3$methane_ppm)
+s1
+s2
+s3
 ```
 
-### Part E
+## Part E
 
-You run a water sample from the surface of the Yahara alongisde your chamber
-measurement and find the 
+Report the mean of your *k* estimates.
+
+```{r}
+mean_k <- mean(s1$estimates[[1]], s2$estimates[[1]], s3$estimates[[1]])
+mean_k
+```
+
+## Q3
+
+### Part A
+
+You run a water sample from the surface of the Yahara alongside your chamber
+measurement and find the methane concentration in the water to be 200 ppm. The 
+chamber is 0.5m tall.Calculate methane flux for your site, report your answer in kg of methane per hour per square meter of water surface.
+
+```{r}
+gradient <- (200-atmo[[1]])
+
+# calc flux in ppm/s
+flux = mean_k*(gradient)
+
+# convert to kg/hour*m2
+flux*(3600/1)*(1/1000)*(0.5)*(0.001) # sec to hour, mg to kg, height of chamber, liter to cubic 
+```
+
+## Part B
+
+Does our flux show the Yahara River acting as a source or sink of methane?
+
+## Part C
+
+Imagine you are tasked with scaling up your estimate of methane flux for the Yahara
+site from an hour to an entire water year. Assume you only have the funding to make
+3 more trips for measurements. When would you take them? What other public data would 
+you be interested seeing to inform your attempt?
+
+## Part D
+
+Imagine you are tasked with scaling up your estimate of methane hourly methane 
+flux of the entire Yahara. Assume you only have the funding to make 3 more trips for measurements. Where would you take them? What other public data would you be interested seeing to inform your attempt?
+
 
 
