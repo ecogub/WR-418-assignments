@@ -1,7 +1,7 @@
 ---
 title: "Gas Flux"
 author: "Nick Gubbins"
-date: "2/16/2022"
+date: "2/18/2022"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -24,10 +24,26 @@ Gases are the inputs and outputs of many important processes in riverine systems
 However, their ephemeral nature makes directly measuring them difficult, if not 
 impossible. 
 
-The most commonly discussed forms of gases take in aquatic systems is 'dissolved'. A dissolved gas is entirely intermixed within solution. Gases can also exist in solution as bubbles. The shortest lived of these are the conventional, large bubbles you think of when blowing out underwater. However, gases can also exist as microbubbles
-on the surfaces of suspended sediments and colloids. 
+The most commonly discussed forms of gases take in aquatic systems is 'dissolved'. A dissolved gas is entirely intermixed within solution. Note that this doesn't mean that they are evenly mixed through the entire system. It takes time for dissolved gases to diffuse through water, often creating gradients across the water column. 
 
-![A (younger) Nick Gubbins taking flux measurements in Trout Creek, WI. These chambers are the same kind linked in the Eurorun example below. Photo credit Luke Loken.](pics/CH4-flux-measures-1024x768.jpg)
+```{r, fig.cap='Profiles of dissolved methane and caron dioxide concentrations at South Sparkling Bog in Woodruff, WI on 1/9/2020. Note how gradients form with depth due to biological processes.'}
+read.csv('data/SSB_GHG.csv') %>%
+  filter(sampledate == '2020-01-09') %>%
+  select(water_depth, co2_uM_L, ch4_uM_L) %>%
+  rename('Depth (m)' = water_depth,
+         'CO2 (uM/L)' = co2_uM_L,
+         'CH4 (uM/L)' = ch4_uM_L) %>%
+  pivot_longer(cols = -`Depth (m)`,
+               names_to = 'var',
+               values_to = 'val') %>%
+  ggplot(., aes(y = `Depth (m)`, x = val))+
+    geom_point()+
+    geom_line()+
+    facet_wrap(~var, scales = 'free')+
+    labs(x = '', title = 'Depth Profiles at South Sparkling Bog')+
+    theme_minimal()+
+    scale_y_reverse()
+```
 
 ## Oxygen
 
@@ -48,11 +64,15 @@ readNWISdv(siteNumbers = '06711565',
       
 ```
 
+Both cycles are driven by two main factors (1) the change in solubility of gases with temperature and (2) seasonal and daily patterns in photosynthesis and respiration. 
 
-How streams metabolism carbon (through in-system photosynthesis and respiration) is an emerging field. If this interests you I highly recommend looking at the [streamPulse Project](https://www.streampulse.org/) and the work of [Professor Bob Hall](https://scholar.google.com/citations?user=UDfwrOkAAAAJ&hl=en). 
+How exactly streams metabolism carbon is still an emerging field. If this interests you I highly recommend looking at the [streamPulse Project](https://www.streampulse.org/) and the work of [Professor Bob Hall](https://scholar.google.com/citations?user=UDfwrOkAAAAJ&hl=en). 
 
 ## Greenhouse gases
 
+Another category of interest is greenhouse gases. The three primary greenhouse gases that inland waters play an important role in are carbon dioxide, methane, and water vapor. Carbon dioxide is the product of respiring organisms and can be dissolved in from the atmosphere. Methane is a much more potent greenhouse gas than carbon dioxide, but exists in much lower concentrations in the atmosphere. In freshwaters, it is commonly the product of methanogenesis, the process by which bacteria reduce carbon (usually in the form of carbon dioxide or acetate) for energy in anoxic environments.
+
+Although lakes and rivers only take up a small portion of the landscape, they act as [outsized collectors and reactors](https://ui.adsabs.harvard.edu/abs/2016NatGe...9..222H/abstract) of carbon and nutrients.
 
 
 # Flux
@@ -63,6 +83,8 @@ concentrations. We describe the net movement of something out of a system as
 anywhere. We could calculate flux of anything out (or in) of anything! Flux of 
 calcium out of a watershed (called 'solute export'), the flux of students out of
 a classroom, or the flux of gas from the surface of a river.
+
+![A (younger) Nick Gubbins taking flux measurements in Trout Creek, WI. These chambers are the same kind linked in the Eurorun example below. Photo credit Luke Loken.](pics/CH4-flux-measures-1024x768.jpg)
 
 ## How to estimate gas flux
 
@@ -104,7 +126,9 @@ Like I mentioned in my flux introduction, fluxes can be across anything and in a
 
 In this assignment, we are going to look at chamber data from the Yahara River in Madison, WI, see if it is a source or sink of methane in the landscape, and make a flux estimate.
 
-Generally when working with gases, it is important to adjust for temperature and pressure. For the sake of this assignment, assume all questions are asking for results in ambient environemental conditions. 
+Generally when working with gases, it is important to adjust for temperature and pressure. For the sake of this assignment, assume all questions are asking for results in ambient environmental conditions.
+
+The measurement site is co-located with USGS site 05428500 if you'd like additional context.
 
 ## Q0:
 
@@ -256,12 +280,17 @@ Does our flux show the Yahara River acting as a source or sink of methane?
 
 ### Part C
 
+Why is there a difference between the concentration of methane in the air and
+in the stream? Why isn't it at equilibrium yet?
+
+### Part D
+
 Imagine you are tasked with scaling up your estimate of methane flux for the Yahara
 site from an hour to an entire water year. Assume you only have the funding to make
 3 more trips for measurements. When would you take them? What other public data would 
 you be interested seeing to inform your attempt?
 
-### Part D
+### Part E
 
 Imagine you are tasked with scaling up your estimate of methane hourly methane 
 flux of the entire Yahara. Assume you only have the funding to make 3 more trips for measurements. Where would you take them? What other public data would you be interested seeing to inform your attempt?
@@ -269,14 +298,17 @@ flux of the entire Yahara. Assume you only have the funding to make 3 more trips
 
 ## Bonus
 
-Estimate *k* for USGS site 06711565 on 5/12/2020. Assume the river is 0.1 m deep.
+Estimate *k* for USGS site 06711565 on 5/12/2020.
+Assume a mean station depth of 0.5m.
 
-The bonus for this assignment is meant to be a more open-ended and a stretch! Don't worry if you are feeling stuck or less than 100% confident in your methods. Add code chunks and text as needed to show your process and justify your methods. A few hints to help you out:
+Note: the bonus for this assignment is meant to be a more open-ended and a stretch! Don't worry if you are feeling stuck or less than 100% confident in your methods. Add code chunks and text as needed to show your process and justify your methods. A few hints to help you out.
 * Look into Odum, 1956 in the 'pubs' folder of this assignment
 * Oxygen saturation != oxygen concentration (look into the function 'DO.saturation()')
 * You will need to look up basic meteorological data
+* Your value for *k* will be small and positive
 
-```{r}
+```{r, warning=F, message=F}
+# whle method is as per Odum pg 106
 # read data
 eng <- readNWISuv(siteNumbers = '06711565',
             parameterCd = c('00010','00300', '00095'),
@@ -292,26 +324,48 @@ eng <- readNWISuv(siteNumbers = '06711565',
 salin <- mean(eng$`Spec Cond (uS/cm)`)
 
 # Caclulate DO sat 
-eng$`DO (%)` <- DO.saturation(eng$`DO (mg/L)`, eng$`Temp (C)`, elevation.m = 1637, salinity = salin, salinity.units = 'uS')*100
+eng$`DO (%)` <- DO.saturation(eng$`DO (mg/L)`, eng$`Temp (C)`, elevation.m = 1637, salinity = salin, salinity.units = 'uS')
 
 # plot data to check
 ggplot(eng, aes(x = dateTime, y = `DO (%)`))+
   geom_point()+
-  geom_hline(yintercept = 100)
+  geom_hline(yintercept = 1)
 
 # get sunrise/set https://sunrise-sunset.org/us/englewood-co/2020/5
 sun_up <- as.POSIXct('2020-05-12 05:17:00')
+sun_up_pre <- as.POSIXct('2020-05-12 04:17:00')
 sun_down <- as.POSIXct('2020-05-12 20:47:00')
+sun_down_post <- as.POSIXct('2020-05-12 21:47:00')
 
 # select data just before rise and after set 
-eng_pre_rise <- eng
+eng_pre_rise <- eng %>%
+  filter(dateTime < sun_up,
+         dateTime > sun_up_pre)
+
+eng_post_set <- eng %>%
+  filter(dateTime > sun_down,
+         dateTime < sun_down_post)
 
 # plot data to check
-ggplot(eng_dark, aes(x = dateTime, y = `DO (%)`))+
-  geom_point()+
-  geom_hline(yintercept = 100)
+ggplot(eng_pre_rise, aes(x = dateTime, y = `DO (%)`))+
+  geom_point()
+
+ggplot(eng_post_set, aes(x = dateTime, y = `DO (%)`))+
+  geom_point()
 
 # estimate slope after sun down and before sun up
-slope_sens.slope(eng$`DO (%)`)
+slope_pre <- sens.slope(eng_pre_rise$`DO (%)`)[[1]]
+slope_post <- sens.slope(eng_post_set$`DO (%)`)[[1]]
+
+# find deficits
+def_pre <- 1-eng_pre_rise$`DO (%)`[1]
+def_post <- 1-eng_post_set$`DO (%)`[1]
+
+# set depth
+z = 0.5
+
+# calc k
+k_bonus <- z*(slope_pre-slope_post)/(def_pre-def_post)
+k_bonus[[1]]
 ```
 
