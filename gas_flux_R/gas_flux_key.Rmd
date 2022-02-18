@@ -49,6 +49,12 @@ read.csv('data/SSB_GHG.csv') %>%
     scale_y_reverse()
 ```
 
+
+Gorsky, A.L., H.A. Dugan, and N.A. Lottig. 2021. Snow Manipulation Greenhouse 
+Gas Measurements at South Sparkling and Trout Bog 2020-2021 ver 1. Environmental
+Data Initiative. https://doi.org/10.6073/pasta/661201fc3172c062bdc46010047031d5.
+Accessed 2022-02-18.
+
 ## Oxygen
 
 The aquatic gas with the most historical interest, oxygen represents a key 
