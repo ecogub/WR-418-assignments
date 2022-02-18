@@ -24,7 +24,11 @@ Gases are the inputs and outputs of many important processes in riverine systems
 However, their ephemeral nature makes directly measuring them difficult, if not 
 impossible. 
 
-The most commonly discussed forms of gases take in aquatic systems is 'dissolved'. A dissolved gas is entirely intermixed within solution. Note that this doesn't mean that they are evenly mixed through the entire system. It takes time for dissolved gases to diffuse through water, often creating gradients across the water column. 
+The most commonly discussed forms of gases take in aquatic systems is 'dissolved'.
+A dissolved gas is entirely intermixed within solution. Note that this doesn't
+mean that they are evenly mixed through the entire system. It takes time for 
+dissolved gases to diffuse through water, often creating gradients across the 
+water column. 
 
 ```{r, fig.cap='Profiles of dissolved methane and caron dioxide concentrations at South Sparkling Bog in Woodruff, WI on 1/9/2020. Note how gradients form with depth due to biological processes.'}
 read.csv('data/SSB_GHG.csv') %>%
@@ -47,7 +51,9 @@ read.csv('data/SSB_GHG.csv') %>%
 
 ## Oxygen
 
-The aquatic gas with the most historical interest, oxygen represents a key indicator of aquatic health. Loading in some data from the South Platte via the USGS, we can see that it cycles with season and time of day. 
+The aquatic gas with the most historical interest, oxygen represents a key 
+indicator of aquatic health. Loading in some data from the South Platte via the
+USGS, we can see that it cycles with season and time of day. 
 ```{r}
 readNWISdv(siteNumbers = '06711565',
             parameterCd = c('00010','00300'),
@@ -64,16 +70,24 @@ readNWISdv(siteNumbers = '06711565',
       
 ```
 
-Both cycles are driven by two main factors (1) the change in solubility of gases with temperature and (2) seasonal and daily patterns in photosynthesis and respiration. 
+Both cycles are driven by two main factors (1) the change in solubility of gases
+with temperature and (2) seasonal and daily patterns in photosynthesis and respiration. 
 
-How exactly streams metabolism carbon is still an emerging field. If this interests you I highly recommend looking at the [streamPulse Project](https://www.streampulse.org/) and the work of [Professor Bob Hall](https://scholar.google.com/citations?user=UDfwrOkAAAAJ&hl=en). 
+How exactly streams metabolism carbon is still an emerging field. If this 
+interests you I highly recommend looking at the [streamPulse Project](https://www.streampulse.org/) and the work of [Professor Bob Hall](https://scholar.google.com/citations?user=UDfwrOkAAAAJ&hl=en). 
 
 ## Greenhouse gases
 
-Another category of interest is greenhouse gases. The three primary greenhouse gases that inland waters play an important role in are carbon dioxide, methane, and water vapor. Carbon dioxide is the product of respiring organisms and can be dissolved in from the atmosphere. Methane is a much more potent greenhouse gas than carbon dioxide, but exists in much lower concentrations in the atmosphere. In freshwaters, it is commonly the product of methanogenesis, the process by which bacteria reduce carbon (usually in the form of carbon dioxide or acetate) for energy in anoxic environments.
+Another category of interest is greenhouse gases. The three primary greenhouse 
+gases that inland waters play an important role in are carbon dioxide, methane,
+and water vapor. Carbon dioxide is the product of respiring organisms and can 
+be dissolved in from the atmosphere. Methane is a much more potent greenhouse 
+gas than carbon dioxide, but exists in much lower concentrations in the 
+atmosphere. In freshwaters, it is commonly the product of methanogenesis, the 
+process by which bacteria reduce carbon (usually in the form of carbon dioxide 
+or acetate) for energy in anoxic environments.
 
 Although lakes and rivers only take up a small portion of the landscape, they act as [outsized collectors and reactors](https://ui.adsabs.harvard.edu/abs/2016NatGe...9..222H/abstract) of carbon and nutrients.
-
 
 # Flux
 
@@ -90,13 +104,20 @@ a classroom, or the flux of gas from the surface of a river.
 
 Flux = *k*(Concentration_sys - Concentration_out)
 
-The lecture videos cover this, but as a reminder: there are three things we need to know to estimate gas flux.
+The lecture videos cover this, but as a reminder: there are three things we need
+to know to estimate gas flux.
 
 * The concentration of the gas outside the system
 * The concentration of the gas inside the system
 * The speed at which the gas can move in and out of the system
 
-The first two are pretty straightforward. We can use any number of methods to measure gas concentrations. Depending on the gas, sometimes samples are taken in air-tight bottles, preserved, and returned to a lab to be analysed. Other gases (like carbon dioxide and methane) preferentially absorb certain wavelengths of light. For those gases, we can use portable analyzers to measure concentrations at high frequency. We will be using data from a Los Gatos Ultra-Portable Greenhouse Gas Analyzer (UGGA) in this homework.
+The first two are pretty straightforward. We can use any number of methods to 
+measure gas concentrations. Depending on the gas, sometimes samples are taken 
+in air-tight bottles, preserved, and returned to a lab to be analysed. Other 
+gases (like carbon dioxide and methane) preferentially absorb certain 
+wavelengths of light. For those gases, we can use portable analyzers to measure
+concentrations at high frequency. We will be using data from a Los Gatos 
+Ultra-Portable Greenhouse Gas Analyzer (UGGA) in this homework.
 
 You can watch an over-hyped promotional video for the [UGAA here.](https://www.youtube.com/watch?v=p3qiYVErCc8&ab_channel=ABBMeasurementExpert)
 
@@ -104,29 +125,55 @@ You can watch an over-hyped promotional video for the [UGAA here.](https://www.y
 
 Once we know the gradient of the gas between the water and the air, we need to
 tackle that third item on our list. The speed at which gases can move in or out
-of water is called the 'gas transfer velocity' or *k*. It is largely a function of how 'open', 'rough', and 'turbulent' the water surface is. I use quotes on those because research shows that *k* is way more complicated than any (or all) of those things. What we do know is that *k* varies widely across  and within aquatic systems. 
+of water is called the 'gas transfer velocity' or *k*. It is largely a function 
+of how 'open', 'rough', and 'turbulent' the water surface is. I use quotes on 
+those because research shows that *k* is way more complicated than any (or all) 
+of those things. What we do know is that *k* varies widely across  and within aquatic systems. 
 
-The problem in measuring *k* is a classic one in science: measuring water disturbs water. To overcome this, researchers leverage the fact that net flux can be measured directly, and be used to solve for *k*. 
+The problem in measuring *k* is a classic one in science: measuring water disturbs 
+water. To overcome this, researchers leverage the fact that net flux can be measured
+directly, and be used to solve for *k*. 
 
 *k* = (Concentration_system - Concentration_surroundings)/Flux
 
 ## Chamber measurements
 
-One way researchers measure flux is with the appropriately named 'flux chambers'. These were originally developed for soil science, but have recently been applied to water as well. The idea is you constantly sample air from a chamber that is sitting just on top of the water surface, you can observed the change in concentration as an estimate of *k*. Below is a conceptual diagram of how this works. In this homework, we will be working with a chamber that took replicate measurements. 
+One way researchers measure flux is with the appropriately named 'flux chambers'.
+These were originally developed for soil science, but have recently been applied
+to water as well. The idea is you constantly sample air from a chamber that is 
+sitting just on top of the water surface, you can observed the change in 
+concentration as an estimate of *k*. Below is a conceptual diagram of how this 
+works. In this homework, we will be working with a chamber that took replicate measurements. 
 
 ![Example of chamber response for CO2.](pics/chamber_diagram.jpg)
 
-This diagram is from [Eurorun](https://freshproject-eurorun.jimdofree.com/eurorun/project-eurorun/methods/), a large gas flux project. Before you put the chamber down on the water, the gas inside will have the same concentration as the atmosphere (see the graph starting at about 400 ppm CO2). When you put the chamber down on the water it forms a seal and the gradient begins to equillibrate. The slope of the line in the 'exponential phase' is *k*. As gas fluxes in or out of the water, it will eventually approach equilibrium with the surface water. This is the 'stationary phase' and can be used as an estimate for the concentration of the gas in the surface of the water. In this assignment, we won't be using the stationary phase and instead an measurement will be provided to you.
+This diagram is from [Eurorun](https://freshproject-eurorun.jimdofree.com/eurorun/project-eurorun/methods/), a large gas
+flux project. Before you put the chamber down on the water, the gas inside will 
+have the same concentration as the atmosphere (see the graph starting at about 
+400 ppm CO2). When you put the chamber down on the water it forms a seal and the
+gradient begins to equillibrate. The slope of the line in the 'exponential phase'
+is *k*. As gas fluxes in or out of the water, it will eventually approach 
+equilibrium with the surface water. This is the 'stationary phase' and can be
+used as an estimate for the concentration of the gas in the surface of the water.
+In this assignment, we won't be using the stationary phase and instead an 
+measurement will be provided to you.
 
 ## Sources and sinks
 
-Like I mentioned in my flux introduction, fluxes can be across anything and in any direction. One way we can talk about flux is if something is a 'source' or a 'sink' of what we are interested in. Sources will have a positive gradient and sinks will have a negative gradient. We only need *k* to tell us the magnitude of the effect!
+Like I mentioned in my flux introduction, fluxes can be across anything and in 
+any direction. One way we can talk about flux is if something is a 'source' or 
+a 'sink' of what we are interested in. Sources will have a positive gradient 
+and sinks will have a negative gradient. We only need *k* to tell us the 
+magnitude of the effect!
 
 # Assignment 
 
-In this assignment, we are going to look at chamber data from the Yahara River in Madison, WI, see if it is a source or sink of methane in the landscape, and make a flux estimate.
+In this assignment, we are going to look at chamber data from the Yahara River 
+in Madison, WI, see if it is a source or sink of methane in the landscape, and make a flux estimate.
 
-Generally when working with gases, it is important to adjust for temperature and pressure. For the sake of this assignment, assume all questions are asking for results in ambient environmental conditions.
+Generally when working with gases, it is important to adjust for temperature 
+and pressure. For the sake of this assignment, assume all questions are asking 
+for results in ambient environmental conditions.
 
 The measurement site is co-located with USGS site 05428500 if you'd like additional context.
 
@@ -140,11 +187,14 @@ here()
 
 ## Q1
 
-Now let's read in our data. This data file is from a greenhouse gas analyzer and has multiple measurements in it at a single site on the Yahara. The file starts with the chamber hanging in the air.
+Now let's read in our data. This data file is from a greenhouse gas analyzer and 
+has multiple measurements in it at a single site on the Yahara. The file starts 
+with the chamber hanging in the air.
 
 ### Part A
 
-Read in the 'gga_03Jun2014_f0000.txt' file from the 'data' folder. Reduce your data to only chamber methane concentrations and datetime. Do not edit your original data file.
+Read in the 'gga_03Jun2014_f0000.txt' file from the 'data' folder. Reduce your 
+data to only chamber methane concentrations and datetime. Do not edit your original data file.
 
 ```{r}
 gas <- read.csv('data/gga_03Jun2014_f0000.txt', skip = 1) %>%
@@ -262,7 +312,8 @@ mean_k
 
 You run a water sample from the surface of the Yahara alongside your chamber
 measurement and find the methane concentration in the water to be 200 ppm. The 
-chamber is 0.5m tall.Calculate methane flux for your site, report your answer in kg of methane per hour per square meter of water surface.
+chamber is 0.5m tall.Calculate methane flux for your site, report your answer in
+kg of methane per hour per square meter of water surface.
 
 ```{r}
 gradient <- (200-atmo[[1]])
@@ -293,7 +344,9 @@ you be interested seeing to inform your attempt?
 ### Part E
 
 Imagine you are tasked with scaling up your estimate of methane hourly methane 
-flux of the entire Yahara. Assume you only have the funding to make 3 more trips for measurements. Where would you take them? What other public data would you be interested seeing to inform your attempt?
+flux of the entire Yahara. Assume you only have the funding to make 3 more trips
+for measurements. Where would you take them? What other public data would you be
+interested seeing to inform your attempt?
 
 
 ## Bonus
@@ -301,7 +354,10 @@ flux of the entire Yahara. Assume you only have the funding to make 3 more trips
 Estimate *k* for USGS site 06711565 on 5/12/2020.
 Assume a mean station depth of 0.5m.
 
-Note: the bonus for this assignment is meant to be a more open-ended and a stretch! Don't worry if you are feeling stuck or less than 100% confident in your methods. Add code chunks and text as needed to show your process and justify your methods. A few hints to help you out.
+Note: the bonus for this assignment is meant to be a more open-ended and a stretch! 
+Don't worry if you are feeling stuck or less than 100% confident in your methods.
+Add code chunks and text as needed to show your process and justify your methods. 
+A few hints to help you out.
 * Look into Odum, 1956 in the 'pubs' folder of this assignment
 * Oxygen saturation != oxygen concentration (look into the function 'DO.saturation()')
 * You will need to look up basic meteorological data
