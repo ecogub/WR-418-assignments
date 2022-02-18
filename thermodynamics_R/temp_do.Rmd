@@ -38,7 +38,7 @@ The gauges are only ~2 miles apart. Let's load in a few months of data from
 both and see how they differ.
 
 ```{r}
-ind <- data <- readNWISuv(siteNumbers = c('03353611', '03353000'),
+ind <- readNWISuv(siteNumbers = c('03353611', '03353000'),
                    parameterCd = '00010',
                    startDate = '2021-10-01',
                    endDate =  '2022-01-01')
