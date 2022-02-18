@@ -15,6 +15,7 @@ library(tidyverse)
 library(dataRetrieval)
 library(lubridate)
 library(trend)
+library(rMR)
 ```
 
 # Aquatic Gases
@@ -47,11 +48,14 @@ readNWISdv(siteNumbers = '06711565',
       
 ```
 
+
+How streams metabolism carbon (through in-system photosynthesis and respiration) is an emerging field. If this interests you I highly recommend looking at the [streamPulse Project](https://www.streampulse.org/) and the work of [Professor Bob Hall](https://scholar.google.com/citations?user=UDfwrOkAAAAJ&hl=en). 
+
 ## Greenhouse gases
 
 
 
-# What the flux?
+# Flux
 
 Gases are always moving, flowing from high areas of high concentrations to lower
 concentrations. We describe the net movement of something out of a system as 
@@ -96,11 +100,11 @@ This diagram is from [Eurorun](https://freshproject-eurorun.jimdofree.com/euroru
 
 Like I mentioned in my flux introduction, fluxes can be across anything and in any direction. One way we can talk about flux is if something is a 'source' or a 'sink' of what we are interested in. Sources will have a positive gradient and sinks will have a negative gradient. We only need *k* to tell us the magnitude of the effect!
 
-The role of freshwaters as sources and sinks of gas is still poorly understood. If this interests you I highly recommend looking at the work of [Professor Bob Hall](https://scholar.google.com/citations?user=UDfwrOkAAAAJ&hl=en). 
-
 # Assignment 
 
 In this assignment, we are going to look at chamber data from the Yahara River in Madison, WI, see if it is a source or sink of methane in the landscape, and make a flux estimate.
+
+Generally when working with gases, it is important to adjust for temperature and pressure. For the sake of this assignment, assume all questions are asking for results in ambient environemental conditions. 
 
 ## Q0:
 
@@ -219,7 +223,7 @@ s2
 s3
 ```
 
-## Part E
+### Part E
 
 Report the mean of your *k* estimates.
 
@@ -246,21 +250,68 @@ flux = mean_k*(gradient)
 flux*(3600/1)*(1/1000)*(0.5)*(0.001) # sec to hour, mg to kg, height of chamber, liter to cubic 
 ```
 
-## Part B
+### Part B
 
 Does our flux show the Yahara River acting as a source or sink of methane?
 
-## Part C
+### Part C
 
 Imagine you are tasked with scaling up your estimate of methane flux for the Yahara
 site from an hour to an entire water year. Assume you only have the funding to make
 3 more trips for measurements. When would you take them? What other public data would 
 you be interested seeing to inform your attempt?
 
-## Part D
+### Part D
 
 Imagine you are tasked with scaling up your estimate of methane hourly methane 
 flux of the entire Yahara. Assume you only have the funding to make 3 more trips for measurements. Where would you take them? What other public data would you be interested seeing to inform your attempt?
 
 
+## Bonus
+
+Estimate *k* for USGS site 06711565 on 5/12/2020. Assume the river is 0.1 m deep.
+
+The bonus for this assignment is meant to be a more open-ended and a stretch! Don't worry if you are feeling stuck or less than 100% confident in your methods. Add code chunks and text as needed to show your process and justify your methods. A few hints to help you out:
+* Look into Odum, 1956 in the 'pubs' folder of this assignment
+* Oxygen saturation != oxygen concentration (look into the function 'DO.saturation()')
+* You will need to look up basic meteorological data
+
+```{r}
+# read data
+eng <- readNWISuv(siteNumbers = '06711565',
+            parameterCd = c('00010','00300', '00095'),
+            startDate = '2020-05-12',
+            endDate =  '2020-05-13',
+            tz = "America/Denver") %>%
+  rename('DO (mg/L)' = X_00300_00000,
+         'Temp (C)' = X_00010_00000,
+         'Spec Cond (uS/cm)' = X_00095_00000) %>%
+  select(dateTime, `DO (mg/L)`, `Temp (C)`, `Spec Cond (uS/cm)`)
+
+# Calc mean salin
+salin <- mean(eng$`Spec Cond (uS/cm)`)
+
+# Caclulate DO sat 
+eng$`DO (%)` <- DO.saturation(eng$`DO (mg/L)`, eng$`Temp (C)`, elevation.m = 1637, salinity = salin, salinity.units = 'uS')*100
+
+# plot data to check
+ggplot(eng, aes(x = dateTime, y = `DO (%)`))+
+  geom_point()+
+  geom_hline(yintercept = 100)
+
+# get sunrise/set https://sunrise-sunset.org/us/englewood-co/2020/5
+sun_up <- as.POSIXct('2020-05-12 05:17:00')
+sun_down <- as.POSIXct('2020-05-12 20:47:00')
+
+# select data just before rise and after set 
+eng_pre_rise <- eng
+
+# plot data to check
+ggplot(eng_dark, aes(x = dateTime, y = `DO (%)`))+
+  geom_point()+
+  geom_hline(yintercept = 100)
+
+# estimate slope after sun down and before sun up
+slope_sens.slope(eng$`DO (%)`)
+```
 
