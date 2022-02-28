@@ -9,13 +9,20 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#install.packages('stream')
+# stuff you've seen
 library(here)
-library(tidyverse)
 library(dataRetrieval)
 library(lubridate)
 library(trend)
+library(tidyverse)
+# mapping stuff
+library(remotes)
+#remotes::install_github("r-spatial/mapview")
+library(mapview)
+library(sf)
+# new stuff
 library(rMR)
+library(plotly)
 ```
 
 # Aquatic Gases
@@ -35,8 +42,8 @@ read.csv('data/SSB_GHG.csv') %>%
   filter(sampledate == '2020-01-09') %>%
   select(water_depth, co2_uM_L, ch4_uM_L) %>%
   rename('Depth (m)' = water_depth,
-         'CO2 (uM/L)' = co2_uM_L,
-         'CH4 (uM/L)' = ch4_uM_L) %>%
+         'CO2' = co2_uM_L,
+         'CH4' = ch4_uM_L) %>%
   pivot_longer(cols = -`Depth (m)`,
                names_to = 'var',
                values_to = 'val') %>%
@@ -44,7 +51,7 @@ read.csv('data/SSB_GHG.csv') %>%
     geom_point()+
     geom_line()+
     facet_wrap(~var, scales = 'free')+
-    labs(x = '', title = 'Depth Profiles at South Sparkling Bog')+
+    labs(x = 'Concentration (uM/L)', title = 'Depth Profiles at South Sparkling Bog')+
     theme_minimal()+
     scale_y_reverse()
 ```
@@ -57,11 +64,13 @@ Accessed 2022-02-18.
 
 ## Oxygen
 
-The aquatic gas with the most historical interest, oxygen represents a key 
-indicator of aquatic health. Loading in some data from the South Platte via the
-USGS, we can see that it cycles with season and time of day. 
+An aquatic gas with a lot of historic data and focused monitoring interest is 
+dissolved oxygen because it is a key indicator of ecosystem health, with low 
+oxygen events potentially causing major disruptions like fish kills. Loading in 
+some data from the South Platte via the USGS, we can see that it cycles with 
+season and time of day. 
 ```{r}
-readNWISdv(siteNumbers = '06711565',
+plot <- readNWISdv(siteNumbers = '06711565',
             parameterCd = c('00010','00300'),
             startDate = '2019-10-01',
             endDate =  '2020-09-30') %>%
@@ -73,11 +82,14 @@ readNWISdv(siteNumbers = '06711565',
     geom_line()+
     facet_wrap(~var, ncol = 1, scales = 'free')+
     labs(y = '', title = '06711565')
+
+ggplotly(plot)
       
 ```
 
-Both cycles are driven by two main factors (1) the change in solubility of gases
-with temperature and (2) seasonal and daily patterns in photosynthesis and respiration. 
+This is a dynamic graph. Trying zooming in on a single day. Both cycles are 
+driven by two main factors (1) the change in solubility of gases
+with temperature and (2) seasonal and daily patterns in photosynthesis and respiration.
 
 How exactly streams metabolism carbon is still an emerging field. If this 
 interests you I highly recommend looking at the [streamPulse Project](https://www.streampulse.org/) and the work of [Professor Bob Hall](https://scholar.google.com/citations?user=UDfwrOkAAAAJ&hl=en). 
@@ -108,7 +120,7 @@ a classroom, or the flux of gas from the surface of a river.
 
 ## How to estimate gas flux
 
-Flux = *k*(Concentration_sys - Concentration_out)
+Flux = *k*(Concentration_system - Concentration_surroundings)
 
 The lecture videos cover this, but as a reminder: there are three things we need
 to know to estimate gas flux.
@@ -119,7 +131,7 @@ to know to estimate gas flux.
 
 The first two are pretty straightforward. We can use any number of methods to 
 measure gas concentrations. Depending on the gas, sometimes samples are taken 
-in air-tight bottles, preserved, and returned to a lab to be analysed. Other 
+in air-tight bottles, preserved, and returned to a lab to be analyzed. Other 
 gases (like carbon dioxide and methane) preferentially absorb certain 
 wavelengths of light. For those gases, we can use portable analyzers to measure
 concentrations at high frequency. We will be using data from a Los Gatos 
@@ -175,13 +187,33 @@ magnitude of the effect!
 # Assignment 
 
 In this assignment, we are going to look at chamber data from the Yahara River 
-in Madison, WI, see if it is a source or sink of methane in the landscape, and make a flux estimate.
+in Madison, WI, see if it is a source or sink of methane in the landscape, and 
+make a flux estimate. The Yahara starts north of Madison, flows through a lot of 
+agricultural land (WI is the Dairy State!), with the gauge itself situated on the
+east side of downtown Madison. The river is interrupted by beaded, glacial lakes.
+
+The code below will generate a site map, but you will need to do some work to
+get your document to knit with it included. Ask Matt or I how to enable this.
+
+```{r}
+# Note: need to github install mapview before uncommenting this code!
+# tibble(lat = 43.089444, lon = -89.360833, Site = 'Yahara River Gauge') %>%
+#   st_as_sf(coords= c('lon', 'lat'), crs = 4326) %>%
+#   mapview()
+```
+
+
+The measurement site is co-located with USGS site 05428500
+if you'd like additional context. Here is a recent site timelapse courtesy of
+the USGS.
+
+<iframe width='600px' height='400px' src='https://apps.usgs.gov/hivis/media/cameras/05428500_Yahara_Main/Yahara_Main_med.webm' >
+</iframe>
 
 Generally when working with gases, it is important to adjust for temperature 
 and pressure. For the sake of this assignment, assume all questions are asking 
 for results in ambient environmental conditions.
 
-The measurement site is co-located with USGS site 05428500 if you'd like additional context.
 
 ## Q0:
 
@@ -238,6 +270,8 @@ the air. This is also useful as a local, atmospheric methane measurement.
 
 Calculate a reasonable 'baseline' methane concentration for your data.
 
+(Hint: Baseline values will be low!)
+
 ```{r}
 atmo <- quantile(gas$methane_ppm, .15)
 atmo
@@ -252,8 +286,8 @@ in the chamber will begin to saturate. This will appear in the time series as
 fluctuations in methane concentrations. We will also want to filter data while
 the chamber is in the air. 
 
-Filter your data to only the sharp rises, before the chamber begins to saturate,
-and after it has been placed on the water surface. (Hint: this can either be
+Filter your data to only the sharp rises, after it has been placed on the water 
+surface, but before the chamber begins to saturate. (Hint: this can either be
 done through times, values, and/or a new index.)
 
 ```{r}
@@ -328,7 +362,7 @@ gradient <- (200-atmo[[1]])
 flux = mean_k*(gradient)
 
 # convert to kg/hour*m2
-flux*(3600/1)*(1/1000)*(0.5)*(0.001) # sec to hour, mg to kg, height of chamber, liter to cubic 
+flux*(3600/1)*(1/1000000)*(0.5)*(0.001) # sec to hour, mg to kg, height of chamber, liter to cubic 
 ```
 
 ### Part B
