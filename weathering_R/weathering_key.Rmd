@@ -1,0 +1,323 @@
+---
+title: "Weathering"
+author: "Nick Gubbins"
+date: "2/21/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# stuff you've seen
+library(here)
+library(dataRetrieval)
+library(lubridate)
+library(trend)
+library(tidyverse)
+library(feather)
+library(plotly)
+# mapping stuff
+library(remotes)
+#remotes::install_github("r-spatial/mapview")
+library(mapview)
+library(sf)
+# new stuff
+library(kableExtra)
+library(zoo)
+library(lfstat)
+```
+
+# Weathering
+
+Broadly, weathering is the process by which minerals are broken down. 
+
+```{r, fig.cap='Table of }
+
+```
+
+
+## Chemical vs mechanical
+
+TSS vs targeted chemistry
+
+## Rock derived solutes
+
+linkeage of terrestrial to freshwater to marine
+
+## Flux II: Return of the Flux
+
+relate back to gas flux assignment
+
+## Does solute flux == weathering?
+
+Atmospheric deposition (wet/dry)
+
+biological demand (Al and Si)
+
+## Importance over human timescales
+
+water quality
+
+soil quality
+
+plant growth/ag
+
+## Importance over geologic timescales
+
+climate
+
+# Assignment 
+
+In this assignment, we are going to look at data from the Bear Brook Watershed in Maine (BBWM). The BBWM experiment has been running since the mid 1980s and is broadly focused on investigating how increased nitrogen, sulfur, and acidity affect surface waters and their surrounding watersheds.
+
+In a previous assignment, we looked at how acid rain was changing over time and how it can control aluminum toxicity. The BBWM experiment is essentially testing what would happen if acid rain had continued unabated. BBWM is split into two watersheds, East Bear (EB) and West Bear (WB). EB is an untreated reference watershed. WB had ammonium sulfate dumped onto it on a bimonthly basis from 1989-2016. Ammonium sulfate is essentially a mixture of sulfuric acid (H2SO4) and ammonium (NH4+). This means there are a few things going on in WB:
+
+* Nitrogen availability is way up. In the 1980s the consensus was that ammonium was the most available form of nitrogen to plants.
+
+* Sulfur availability is way up. Sulfate is the most plant accessible form of sulfur. Although sulfur isn't usually limiting, it is an important nutrient for plants and microbes.
+
+* Acidity is way up. Ammonium sulfate forms sulfuric acid in solution. 
+
+You can see the watersheds here:
+
+```{r}
+'East Bear' <- st_read('data/EB/EB.shx')
+'West Bear' <- st_read('data/WB/WB.shx')
+
+mapviewOptions(basemaps = "OpenTopoMap")
+mapview(`East Bear`)+
+  mapview(`West Bear`, col.regions = 'red')
+```
+
+
+## Q1
+
+### Part A
+
+Given the background information above and the controls on weathering covered in lecture, write a brief (1-2 paragraphs) hypothesis about how and why you think weathering rates will differ between EB and WB. 
+
+Make sure your answer covers both *what* you expect to differ and *why* you think that will be the case. 
+
+### Part B
+
+Consider the three affects listed in the background section of this assignment (increased nitrogen, sulfur, and acid inputs). For each, give an example of where you might find this condition in the real world. Acid rain from industrial NOx and SOx has been thoroughly covered already, so pick other examples. 
+
+## Q2
+
+Data loading and manipulation. 
+
+### Part A
+
+Read in the discharge (Q) and stream chemistry data for both watersheds (see the 'data' folder). Combine them into a single data frame and remove the quality assurance flags from the data. Use the function glimpse() to show your final, combined data frame.
+
+(Hint: This is the same Macrosheds data format as the Acid Rain assignment. Go look at that if you are having trouble.)
+
+```{r}
+data <- read_feather('data/EB_chem_stream.feather') %>%
+  rbind(read_feather('data/WB_chem_stream.feather')) %>%
+  rbind(read_feather('data/WB_q.feather')) %>%
+  rbind(read_feather('data/EB_q.feather')) %>%
+  select(datetime, site_code, var, val)
+
+glimpse(data)
+```
+
+### Part B
+
+Use unique() to show all the variables present in your combined dataset.
+
+```{r}
+unique(data$var)
+```
+
+## Q3
+
+Before we tackle our main question, let's do some exploratory data analysis (or EDA). This is a common first step when trying to answer a practical or scientific question. Rather than rushing into applying an analysis, we want to get a gestalt understanding of our data. 
+
+For our EDA, we will be making some plots. Don't worry too much about proper labels or titles, as the purpose of these is to inform you, the investigator. 
+
+**The plots should still be easily to interpret.**
+
+### Part A
+
+Let's say you don't trust my summary of the experimental maniupulation effects. 
+Plot a facet-wrapped time series of pH, total nitrogen, and sulfate at the both sites. 
+
+(Hint: The metadata for all Macrosheds data is available in the 'data/macrosheds_vardata.csv')
+
+```{r}
+data %>%
+ filter(var %in% c("GN_pH", "GN_SO4_S", "GN_TN")) %>%
+  ggplot(., aes(x = datetime, y = val, color = site_code))+
+    geom_point()+
+    facet_wrap(~var, scales = 'free', ncol = 1)
+```
+
+### Part B
+
+You don't know the researchers at BBWM (I assume), so let's do a quick validation of their measurements. 
+
+Make a scatterplot of the ratio of bicarbonate to total dissolved inorganic carbon vs pH at the experimental watershed.
+
+```{r}
+data %>%
+  pivot_wider(id_cols = c(datetime, site_code),
+              names_from = var,
+              values_from = val) %>%
+  select(datetime, site_code, ph = GN_pH, bicarb = GN_HCO3, dic = GN_DIC) %>%
+  filter(site_code == 'WB') %>%
+  ggplot(., aes(x = ph, y = bicarb/dic))+
+  geom_point()
+```
+
+
+### Part C
+
+Does your graph from the previous part make you feel confident in this data? Why or why not? Cite figures or ideas from lectures in your answer. 
+
+## Q4
+
+Which watershed is weathering more? 
+
+To answer this question we need to approximate weathering rates at both watersheds. We'll be calculating annual fluxes of silicon as a proxy for chemical weathering at both sites.
+
+### Part A
+
+Why are we using silicon fluxes and not one of the other variables you listed in question 2, part B?
+
+### Part B
+
+What is the frequency of the discharge data? What about the frequency of the silicon samples? Do they match? Prove it via code. Make sure your output is able to be understood by a person.
+
+```{r}
+data %>%
+  filter(var == 'IS_discharge') %>%
+  mutate(diff = datetime-lag(datetime)) %>%
+  select(var,diff) %>%
+  tail()
+
+data %>%
+  filter(var == 'GN_Si') %>%
+  mutate(diff = datetime-lag(datetime)) %>%
+  select(var,diff) %>%
+  tail()
+
+# Yes, they match at a daily interval.
+```
+
+
+### Part C
+
+Calculate the flux of silcon at the daily timescale both EB and WB. *Filter your data to only WY1998-WY2002.* Use glimpse() to show your result.
+
+The area of WB is 10.06 ha and the area of EB is 10.76 ha. 
+
+*Do not remove NAs! We will need those later!*
+
+(Hint: The metadata for all Macrosheds data is available in the 'data/macrosheds_vardata.csv')
+
+```{r}
+flux <- data %>%
+  pivot_wider(id_cols = c(datetime, site_code),
+              names_from = var,
+              values_from = val) %>%
+  select(datetime, site_code, si = GN_Si, q = IS_discharge) %>%
+  filter(datetime > as.POSIXct('1998-10-01'),
+         datetime < as.POSIXct('2002-09-30')) %>%
+  mutate(area = ifelse(site_code == 'EB', 10.76, 10.06),
+         flux = ((si*q)/area)*(86400/1)*(1/1e6)) # calc flux in mg/sec*ha and convert sec -> day and mg -> kg
+
+```
+
+
+### Part D
+
+Plot your new, fine-scale flux timeseries with both line and point geometry on the same plot. Be sure to include appropriate labels, a title, and a descriptive caption. Color your timeseries to match the map in the background section.
+
+```{r}
+ggplot(flux, aes(x = datetime, y = flux, color = site_code))+
+  geom_point()+
+  geom_line()+
+  scale_color_manual(values = c('blue', 'red'))+
+  labs(y = 'Si Flux (kg/ha/day)', x = 'Date', color = 'Site', title = 'Daily Silicon Flux at BBWM',
+       caption = 'Daily fluxes of silicon, a rock derived solute, at BBWM. \n WB has been treated with acid, EB is a reference watershed.')
+```
+
+### Part E
+
+Is our data completely continuous? What will happen if we try to calculate flux with this dataset? Is there a pattern to the breaks? Why might the good folks at BBWM let those breaks happen? 
+
+(Hint: Look at timeseries of the Q and Si separately. Think the flux formula and how you would spend your research dollars.)
+
+### Part F
+
+Let's fill in our to make it continuous. You should be careful about doing this in your own work, but for reasons you (should) have discussed in part E we can safely do it here. There are many ways to do (with varying degrees of merit). We will be using a simple one: linear interpolation. Essentially, we are telling R to draw a straight line between observations on either side of the data gap. 
+
+To do this, we will use the na.approx() function. The 'rule' for linear interpolation is 2. 
+
+```{r}
+
+flux_full <- flux %>%
+  arrange(datetime) %>%
+  mutate(flux_int = na.approx(flux, rule = 2))
+
+```
+
+
+### Part G
+
+Plot your new, interpolated timeseries just like you did for part D.
+
+```{r}
+p <- ggplot(flux_full, aes(x = datetime, y = flux_int, color = site_code))+
+  geom_point()+
+  geom_line()+
+  scale_color_manual(values = c('blue', 'red'))+
+  labs(y = 'Si Flux (kg/ha/day)', x = 'Date', color = 'Site', title = 'Daily Silicon Flux at BBWM',
+       caption = 'Daily fluxes of silicon, a rock derived solute, at BBWM. \n WB has been treated with acid, EB is a reference watershed.')
+
+ggplotly(p)
+```
+
+### Part H 
+
+Zoom in on the previous gaps of your graph. Using such a naive method is... not great. But it's fine for our purposes and it shouldn't throw off our annual estimates by much.
+
+We finally have what we need to calculate annual silicon flux for both watersheds. Do so and present your data as you find appropriate in units of kg per ha per year. If you color your data, make sure it sticks to the schema we started earlier.
+
+Your figure or table should clearly answer our question: which watershed hosts the higher weathering rates?
+
+Hints: 
+
+* If you  are struggling check out the [work with data primer](https://rstudio.cloud/learn/primers/2.1) on Rstudio cloud.
+
+* The function water_year() slickly pulls the WY from a date.
+
+* Use a caption to explictly state which watershed has higher weathering rates.
+
+```{r}
+flux_full %>%
+  mutate(wy = water_year(datetime)) %>%
+  group_by(site_code, wy) %>%
+  summarize(flux = sum(flux_int)) %>%
+  ggplot(., aes(x = as.character(wy), y = flux, color = site_code))+
+    geom_point()+
+  scale_color_manual(values = c('blue', 'red'))+
+  labs(y = 'Si Flux (kg/ha/year)', x = 'Date', color = 'Site', title = 'Annual Silicon Flux at BBWM',
+       caption = 'Annual fluxes of silicon, a rock derived solute, at BBWM. \n WB has been treated with acid, EB is a reference watershed. \n Note the higher fluxes at the treatment watershed.')
+  
+```
+
+
+### Part I
+
+Consider your two time series (the one with gaps and the interpolated one) and your annual estimates. Do you think your estimates are biased high, low, or are perfect? Why do you think that? 
+
+Does this affect your conclusion from the previous part? Why or why not?
+
+## Bonus
+
+
+
+
