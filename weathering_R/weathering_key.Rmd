@@ -30,7 +30,7 @@ library(lfstat)
 
 # Weathering
 
-Broadly, weathering is the process by which minerals are broken down. Weathering is an important part of many biogeochemical cycles and is responsible for many of the common constituents found in streamflow. 
+Broadly, weathering is the process by which minerals are broken down. Weathering is an important part of Earth's biogeochemical cycles, is the primary force in soil formation, and is responsible for many of the common constituents found in streamflow. For this assignment we will be learning comparing two watersheds to see which of them is weathering more rapidly.
 
 ### Chemical vs physical
 
@@ -51,16 +51,16 @@ read.csv('data/wiki_crust_tbl.csv') %>%
   rename('Most Abundant Element' = Most.Abundant.Elements,
          'Approximate % by Weight' = Approximate...by.Weight) %>%
   kbl() %>%
-  kable_styling()
+  kable_styling(full_width = F)
 ```
 
 Table of elemental composition of the Earth's crust. Source: Wikipedia contributors. 'Earth's crust.' Wikipedia, The Free Encyclopedia, 20 Feb. 2022. Web. 3 Mar. 2022.
 
 ### Flux II: Return of the Flux
 
-In our last R assignment (Gas Flux) we calculated the flux of methane off of the Yahara River. In this assignment we will be looking at a different kind of flux: solute flux from a watershed (often called 'export'). Fluxes from terrestrial watersheds are snapshots a key linkage in global biogeochemical cycles, connecting land, freshwaters, and the ocean.  
+In our last R assignment (Gas Flux) we calculated the flux of methane off of the Yahara River. In this assignment we will be looking at a different kind of flux: solute flux from a watershed (often called 'export'). Fluxes from terrestrial watersheds are snapshots a key linkage in global biogeochemical cycles, connecting land, freshwaters, and the ocean. 
 
-We can calculate solute flux much more easily than gas flux. This is because instead of grasping weakly at an estimate for transfer velocity (*k*) we just get to use discharge, something we are generally good at measuring. The equation for an instantaneous solute flux (like a snapshot in time) is:
+We can calculate solute flux much more easily than gas flux. This is because instead of grasping weakly at an estimate for transfer velocity (*k*) we just get to use discharge, something we are generally good at measuring. Likewise, where before the system was the river and the surroundings were the air, we now are considering the watershed itself to be the system and everything downstream of it the surroundings. The equation for an instantaneous solute flux (like a snapshot in time or a single point estimate) is:
 
 $Flux = (Q*[X])/A$
 
@@ -101,7 +101,7 @@ Some researchers are looking into how we can use this effect over more relevant 
 
 # Assignment 
 
-In this assignment, we are going to look at data from the Bear Brook Watershed in Maine (BBWM). The BBWM experiment has been running since the mid 1980s and is broadly focused on investigating how increased nitrogen, sulfur, and acidity affect surface waters and their surrounding watersheds.
+In this assignment, we are going to look at data from the Bear [Brook Watershed in Maine (BBWM)](https://umaine.edu/bbwm/). The BBWM experiment has been running since the mid 1980s and is broadly focused on investigating how increased nitrogen, sulfur, and acidity affect surface waters and their surrounding watersheds.
 
 In a previous assignment, we looked at how acid rain was changing over time and how it can control aluminum toxicity. The BBWM experiment is essentially testing what would happen if acid rain had continued unabated. BBWM is split into two watersheds, East Bear (EB) and West Bear (WB). EB is an untreated reference watershed. WB had ammonium sulfate dumped onto it on a bimonthly basis from 1989-2016. Ammonium sulfate is essentially a mixture of sulfuric acid (H2SO4) and ammonium (NH4+). This means there are a few things going on in WB:
 
@@ -124,6 +124,8 @@ mapview(`East Bear`)+
 
 
 ## Q1
+
+Before we get too consumed in coding, let's take a step back.
 
 ### Part A
 
@@ -214,9 +216,9 @@ Does your graph from the previous part make you feel confident in this data? Why
 
 ## Q4
 
-Which watershed is weathering more? 
+Which watershed is weathering more rapidly? 
 
-To answer this question we need to approximate weathering rates at both watersheds. We'll be calculating annual fluxes of silicon as a proxy for chemical weathering at both sites.
+To answer this question we need to approximate weathering rates at both watersheds. We'll be calculating annual fluxes of silicon as a proxy for weathering at both sites.
 
 ### Part A
 
