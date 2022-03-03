@@ -30,7 +30,9 @@ library(lfstat)
 
 # Weathering
 
-Broadly, weathering is the process by which minerals are broken down. Weathering is an important part of Earth's biogeochemical cycles, is the primary force in soil formation, and is responsible for many of the common constituents found in streamflow. For this assignment we will be learning comparing two watersheds to see which of them is weathering more rapidly.
+Broadly, weathering is the process by which minerals are broken down. Weathering is an important part of Earth's biogeochemical cycles, is the primary force in soil formation, and is responsible for many of the common constituents found in streamflow, including key contaminants. For this assignment we will be comparing two watersheds to see which of them is weathering more rapidly.
+
+If you love all the video content this course provides and want even more [here is a (totally optional) overview of weathering by  Crash Course.](https://www.youtube.com/watch?v=pmF41T52nJs)
 
 ### Chemical vs physical
 
@@ -86,6 +88,23 @@ When thinking about solute fluxes as a proxy for weathering rates we need to be 
 
 An ideal solute for estimating weathering rates will either not experience any of these factors or do so in a predictable way.
 
+Let's take a look at the precipitation chemistry from the study site we'll be using today.
+```{r, echo=F, warning=F}
+p <- read_feather('data/EB_chem_precip.feather') %>%
+  filter(var %in% c('GN_Si', 'GN_Na', 'GN_SO4_S')) %>%
+  mutate(var_pretty = ifelse(var == 'GN_Si', 'Si',
+                             ifelse(var == 'GN_Na', 'Na', 
+                                     ifelse(var == 'GN_SO4_S', 'SO4', 'fail')))) %>%
+  ggplot(., aes(x = datetime, y = val))+
+  geom_line()+
+  facet_wrap(~var_pretty, scales = 'free', ncol = 1)+
+  labs(x = 'Date', y = '[X] (mg/L)',
+       title = 'Precipitation Chemistry at East Bear Brook')+
+  theme_minimal()
+ggplotly(p)
+```
+Note how some solutes come in regularly from rain, some episodically, and some only rarely.
+
 ### Importance over human timescales
 
 Weathering, and the solute fluxes derived from it, are deeply important on the human (less than ~100 year) timescale. At it most basic level, weathering rates determine the baseline concentrations of many key solutes for human and aquatic health. They also represent a key indicator of soil health, showing land managers which elements are being used efficiently by plants and which are going to waste. Weathering rates also control the availability of phosphorus in natural systems, acting as an extended control on plant growth.
@@ -101,7 +120,7 @@ Some researchers are looking into how we can use this effect over more relevant 
 
 # Assignment 
 
-In this assignment, we are going to look at data from the Bear [Brook Watershed in Maine (BBWM)](https://umaine.edu/bbwm/). The BBWM experiment has been running since the mid 1980s and is broadly focused on investigating how increased nitrogen, sulfur, and acidity affect surface waters and their surrounding watersheds.
+In this assignment, we are going to look at data from the [Bear Brook Watershed in Maine (BBWM)](https://umaine.edu/bbwm/). The BBWM experiment has been running since the mid 1980s and is broadly focused on investigating how increased nitrogen, sulfur, and acidity affect surface waters and their surrounding watersheds.
 
 In a previous assignment, we looked at how acid rain was changing over time and how it can control aluminum toxicity. The BBWM experiment is essentially testing what would happen if acid rain had continued unabated. BBWM is split into two watersheds, East Bear (EB) and West Bear (WB). EB is an untreated reference watershed. WB had ammonium sulfate dumped onto it on a bimonthly basis from 1989-2016. Ammonium sulfate is essentially a mixture of sulfuric acid (H2SO4) and ammonium (NH4+). This means there are a few things going on in WB:
 
@@ -175,16 +194,16 @@ Before we tackle our main question, let's do some exploratory data analysis (or 
 
 For our EDA, we will be making some plots. Don't worry too much about proper labels or titles, as the purpose of these is to inform you, the investigator. 
 
-**The plots should still be easily to interpret.**
+**The plots should still be easy to interpret. When in doubt make them too pretty rather than too ugly.**
 
 ### Part A
 
-Let's say you don't trust my summary of the experimental maniupulation effects. 
-Plot a facet-wrapped time series of pH, total nitrogen, and sulfate at the both sites. 
+Let's say you don't trust my summary of the experimental manipulation effects. 
+Plot a facet-wrapped time series of pH, total nitrogen, and sulfate in the streams at both sites. 
 
 (Hint: The metadata for all Macrosheds data is available in the 'data/macrosheds_vardata.csv')
 
-```{r}
+```{r, warning=F}
 data %>%
  filter(var %in% c("GN_pH", "GN_SO4_S", "GN_TN")) %>%
   ggplot(., aes(x = datetime, y = val, color = site_code))+
@@ -194,7 +213,7 @@ data %>%
 
 ### Part B
 
-You don't know the researchers at BBWM (I assume), so let's do a quick validation of their measurements. 
+You don't know the researchers at BBWM (I assume), so let's do a quick validation of their lab and measurements. 
 
 Make a scatterplot of the ratio of bicarbonate to total dissolved inorganic carbon vs pH at the experimental watershed.
 
@@ -214,6 +233,8 @@ data %>%
 
 Does your graph from the previous part make you feel confident in this data? Why or why not? Cite figures or ideas from lectures in your answer. 
 
+(Hint: What effect are we observing here, in all its glory?)
+
 ## Q4
 
 Which watershed is weathering more rapidly? 
@@ -226,22 +247,24 @@ Why are we using silicon fluxes and not one of the other variables you listed in
 
 ### Part B
 
-What is the frequency of the discharge data? What about the frequency of the silicon samples? Do they match? Prove it via code. Make sure your output is able to be understood by a person.
+What is the frequency of the discharge data? What about the frequency of the silicon samples? Do they match? Are there exceptions? Prove it via code. Make sure your output is able to be understood by a person.
 
 ```{r}
 data %>%
   filter(var == 'IS_discharge') %>%
   mutate(diff = datetime-lag(datetime)) %>%
   select(var,diff) %>%
-  tail()
+  count(diff) %>%
+  arrange(-n)
 
 data %>%
   filter(var == 'GN_Si') %>%
   mutate(diff = datetime-lag(datetime)) %>%
   select(var,diff) %>%
-  tail()
+  count(diff) %>%
+  arrange(-n)
 
-# Yes, they match at a daily interval.
+# Yes, aside from a few gaps, they match at a daily interval.
 ```
 
 
@@ -286,13 +309,15 @@ ggplot(flux, aes(x = datetime, y = flux, color = site_code))+
 
 Is our data completely continuous? What will happen if we try to calculate flux with this dataset? Is there a pattern to the breaks? Why might the good folks at BBWM let those breaks happen? 
 
-(Hint: Look at timeseries of the Q and Si separately. Think the flux formula and how you would spend your research dollars.)
+(Hint: Look at timeseries of the Q and [Si] separately. Think about the flux formula and how you would spend your research dollars.)
 
 ### Part F
 
-Let's fill in our to make it continuous. You should be careful about doing this in your own work, but for reasons you (should) have discussed in part E we can safely do it here. There are many ways to do (with varying degrees of merit). We will be using a simple one: linear interpolation. Essentially, we are telling R to draw a straight line between observations on either side of the data gap. 
+Let's fill in our data to make it continuous. You should be careful about doing this in your own work, but for reasons you (should) have discussed in part E we can do it reasonably safely here. There are many ways to interpolate data (with varying degrees of merit). We will be using a simple one: linear interpolation. Essentially, we are telling R to draw a straight line between observations on either side of a data gap. 
 
 To do this, we will use the na.approx() function. The 'rule' for linear interpolation is 2. 
+
+Create a new column of interpolated flux values for your data. 
 
 ```{r}
 
@@ -320,11 +345,11 @@ ggplotly(p)
 
 ### Part H 
 
-Zoom in on the previous gaps of your graph. Using such a naive method is... not great. But it's fine for our purposes and it shouldn't throw off our annual estimates by much.
+Zoom in on the previously gaped parts of your graph. Using such a naive method is... not great. But it's fine for our purposes and it shouldn't throw off our annual estimates by much.
 
-We finally have what we need to calculate annual silicon flux for both watersheds. Do so and present your data as you find appropriate in units of kg per ha per year. If you color your data, make sure it sticks to the schema we started earlier.
+We finally have what we need to **calculate annual silicon flux for both watersheds**. Do so and present your data as you find appropriate in units of kg per ha per year. If you color your data, make sure it sticks to the schema we started earlier.
 
-Your figure or table should clearly answer our question: which watershed hosts the higher weathering rates?
+**Your figure or table should clearly answer our question: which watershed hosts the higher weathering rates?**
 
 Hints: 
 
@@ -332,7 +357,7 @@ Hints:
 
 * The function water_year() slickly pulls the WY from a date.
 
-* Use a caption to explictly state which watershed has higher weathering rates.
+* Use a caption to explicitly state which watershed has higher weathering rates.
 
 ```{r}
 flux_full %>%
@@ -374,6 +399,6 @@ What do your mixing ratio plots indicate is the underlying parent material of BB
 
 ### Part C
 
-What may be skewing our diagram and how could we correct it with addtional data?
+What may be skewing our diagram and how could we correct it with additional data?
 
 (Hint: Think about where BBWM is and how mixing ratios are calculated. Are there any potential non-weathering sources around?)
