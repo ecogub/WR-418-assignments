@@ -1,7 +1,7 @@
 ---
-title: "Weathering"
+title: "Weathering and Solute Fluxes"
 author: "Nick Gubbins"
-date: "2/21/2022"
+date: "3/5/2022"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -30,42 +30,74 @@ library(lfstat)
 
 # Weathering
 
-Broadly, weathering is the process by which minerals are broken down. 
+Broadly, weathering is the process by which minerals are broken down. Weathering is an important part of many biogeochemical cycles and is responsible for many of the common constituents found in streamflow. 
 
-```{r, fig.cap='Table of }
+### Chemical vs physical
 
+There are two kinds of weathering and water is top level control on both.
+
+Physical weathering is the mechanical breakdown of minerals via physical force. A simple example of physical weathering is runoff water picking up and carrying soil into a nearby river. Physical weathering can be carried out by any number of vectors: wind, water, freezing and thawing, tectonic shifts, etc. Watershed scientists sometimes use total suspended soils (TSS) or something similar as an imperfect proxy for this. The USGS is working on the next generation of suspended soil detection using acoustic methods. If you want to learn more you can [read about it here.](https://pubs.er.usgs.gov/publication/tm3C5)
+
+Physical weathering is often the first steps in complete weathering of a mineral. With many of the later steps occurring chemically.
+
+Chemical weathering is the reaction and dissolution of minerals. Water is a key player here because it acts as an acid, a base, and a medium for dissolution. Water can act as an acid, splitting chemical bonds or as a redox agent. Water plays a particularly key role in chemical weathering, the convection of dissolved materials. As you learned in the thermodynamics unit, once a reaction reaches equilibrium it has no further net change. Water constantly flowing through rock and soil carries away dissolved consitutents, keeping weathering reactions from ever reaching equilibrium. There are myriad ways minerals are weathered chemically and each can be sensitive to other environmental factors (more on that in a bit). In order to get at chemical weathering rates, watershed scientists will look at particular rock-derived solutes.
+
+### Rock derived solutes
+
+Many common dissolved constituents of stream water are weathered from rock. Some of these, like calcium, sodium, potassium, manganese, and phosphorus, are nutrients needed to sustain life. Others, like aluminum, are toxic to life. All are found in their dissolved form due, primarily, to chemical weathering.
+
+```{r, echo = F}
+read.csv('data/wiki_crust_tbl.csv') %>%
+  rename('Most Abundant Element' = Most.Abundant.Elements,
+         'Approximate % by Weight' = Approximate...by.Weight) %>%
+  kbl() %>%
+  kable_styling()
 ```
 
+Table of elemental composition of the Earth's crust. Source: Wikipedia contributors. 'Earth's crust.' Wikipedia, The Free Encyclopedia, 20 Feb. 2022. Web. 3 Mar. 2022.
 
-## Chemical vs mechanical
+### Flux II: Return of the Flux
 
-TSS vs targeted chemistry
+In our last R assignment (Gas Flux) we calculated the flux of methane off of the Yahara River. In this assignment we will be looking at a different kind of flux: solute flux from a watershed (often called 'export'). Fluxes from terrestrial watersheds are snapshots a key linkage in global biogeochemical cycles, connecting land, freshwaters, and the ocean.  
 
-## Rock derived solutes
+We can calculate solute flux much more easily than gas flux. This is because instead of grasping weakly at an estimate for transfer velocity (*k*) we just get to use discharge, something we are generally good at measuring. The equation for an instantaneous solute flux (like a snapshot in time) is:
 
-linkeage of terrestrial to freshwater to marine
+$Flux = (Q*[X])/A$
 
-## Flux II: Return of the Flux
+Where 'Q' is discharge, '[X]' is the concentration of a solute, and 'A' is the watershed area. Fluxes are usually reported in a mass per time per area.
 
-relate back to gas flux assignment
+Scientists and managers are often interested in the total flux over a period of time.The equation for solute flux over a given period is:
 
-## Does solute flux == weathering?
+$Flux = \sum_{t=1}^{t_x} (Q*[X])/A$
 
-Atmospheric deposition (wet/dry)
+Where 't' is time. It's important to consider the time step of an instantaneous flux before scaling it up to a larger time step.
 
-biological demand (Al and Si)
+### Does solute flux == weathering?
 
-## Importance over human timescales
+When thinking about solute fluxes as a proxy for weathering rates we need to be careful. While many solutes are originally derived from rock, they may come from other sources on short enough timescales. 
 
-water quality
+* Anthropogenic: Humans can add solutes in many forms. For example, phosphorus is often used as a fertilizer and in de-icers for roadways. 
 
-soil quality
+* Biologic: Solutes concentrations may also be affected by biological demand. Manganese is an important nutrient, meaning plants are actively trying to take it up.
 
-plant growth/ag
+* Atmospheric: Dust and rain can deposit materials weathered elsewhere into the watershed. For example, sites near the coast may experience heavy sodium deposition from sea spray. 
 
-## Importance over geologic timescales
+* Complexation: As you learned in the Acid Rain assignment, some solutes (like aluminum) have solubilities that depend on the surrounding redox state or pH.
 
-climate
+An ideal solute for estimating weathering rates will either not experience any of these factors or do so in a predictable way.
+
+### Importance over human timescales
+
+Weathering, and the solute fluxes derived from it, are deeply important on the human (less than ~100 year) timescale. At it most basic level, weathering rates determine the baseline concentrations of many key solutes for human and aquatic health. They also represent a key indicator of soil health, showing land managers which elements are being used efficiently by plants and which are going to waste. Weathering rates also control the availability of phosphorus in natural systems, acting as an extended control on plant growth.
+
+### Importance over geologic timescales
+
+Over geologic time (millions to billions of years) weathering plays a critical role in many biogeochemical processes. For example, calcium weathered from rock eventually reacts with dissolved bicarbonate to form calcium carbonate, the mineral sand and shells are made from. Remember from the acidity and alkalinity unit that bicarbonate is largely formed from dissolved, atmospheric carbon dioxide. This cycle of greater weathering leading to more buried carbon acts a stabilizing feedback loop for the earth climate system. 
+
+![Conceptual diagram of stablizing weathering-climate feedback loop. Frings, Patrick J. ; Palaeoweathering: How Do Weathering Rates Vary with Climate?. Elements 2019;; 15 (4): 259–265. doi: https://doi.org/10.2138/gselements.15.4.259](pics/carb-sil-cycle.jpg)
+
+Some researchers are looking into how we can use this effect over more relevant timescales to humanity. You can read more about it in the Taylor et al 2017 publication in the 'pubs' folder of this project.
+
 
 # Assignment 
 
@@ -81,9 +113,9 @@ In a previous assignment, we looked at how acid rain was changing over time and 
 
 You can see the watersheds here:
 
-```{r}
-'East Bear' <- st_read('data/EB/EB.shx')
-'West Bear' <- st_read('data/WB/WB.shx')
+```{r, echo = F, message = F, warning = F}
+'East Bear' <- st_read('data/EB/EB.shx', quiet = T)
+'West Bear' <- st_read('data/WB/WB.shx', quiet = T)
 
 mapviewOptions(basemaps = "OpenTopoMap")
 mapview(`East Bear`)+
@@ -95,11 +127,15 @@ mapview(`East Bear`)+
 
 ### Part A
 
+Look at the equation for solute flux calculation above. Why do we report fluxes adjusted by area?
+
+### Part B
+
 Given the background information above and the controls on weathering covered in lecture, write a brief (1-2 paragraphs) hypothesis about how and why you think weathering rates will differ between EB and WB. 
 
 Make sure your answer covers both *what* you expect to differ and *why* you think that will be the case. 
 
-### Part B
+### Part C
 
 Consider the three affects listed in the background section of this assignment (increased nitrogen, sulfur, and acid inputs). For each, give an example of where you might find this condition in the real world. Acid rain from industrial NOx and SOx has been thoroughly covered already, so pick other examples. 
 
@@ -318,6 +354,24 @@ Does this affect your conclusion from the previous part? Why or why not?
 
 ## Bonus
 
+Go take a look at the Gaillardet et al 1999 paper in the 'pubs' folder of this project. This paper is super dense, so don't try to understand every bit of it. A good method for gleaming understanding from scary papers is to read the abstract, conclusions, and figures. Before we go any further, please give the paper a hearty skim.
 
+### Part A
 
+One way Gaillardet and his co-authors understand solute fluxes in large rivers of the world is through mixing ratios. The basic idea is that differing parent materials (rocks that underlay soils) have different elemental compositions that in turn yield identifiable solute flux signatures. 
 
+Recreate figure 2 from the paper for BBWM, with each year of record at EB/WB as a point. Color your data by site and include a 1:1 reference line.
+
+```{r}
+
+```
+
+### Part B
+
+What do your mixing ratio plots indicate is the underlying parent material of BBWM?
+
+### Part C
+
+What may be skewing our diagram and how could we correct it with addtional data?
+
+(Hint: Think about where BBWM is and how mixing ratios are calculated. Are there any potential non-weathering sources around?)
