@@ -346,7 +346,7 @@ data %>%
 
 ### Part C
 
-Calculate the flux of silcon at the daily timescale both EB and WB. *Filter your data to only WY1998-WY2002.* Use glimpse() to show your result.
+Calculate the flux of silcon at a daily frequency for both EB and WB. *Filter your data to only WY1998-WY2002.* Use glimpse() to show your result.
 
 The area of WB is 10.06 ha and the area of EB is 10.76 ha. 
 
@@ -363,14 +363,14 @@ flux <- data %>%
   filter(datetime > as.POSIXct('1998-10-01'),
          datetime < as.POSIXct('2002-09-30')) %>%
   mutate(area = ifelse(site_code == 'EB', 10.76, 10.06),
-         flux = ((si*q)/area)*(86400/1)*(1/1e6)) # calc flux in mg/sec*ha and convert sec -> day and mg -> kg
+         flux = ((si*q)/area)*(86400/1)*(1/1e6)) # calculate instantaneous flux in mg/sec*ha and convert to daily flux with sec -> day and mg -> kg
 
 ```
 
 
 ### Part D
 
-Plot your new, fine-scale flux timeseries with both line and point geometry on the same plot. Be sure to include appropriate labels, a title, and a descriptive caption. Color your timeseries to match the map in the background section.
+Plot your new, daily flux timeseries with both line and point geometry on the same plot. Be sure to include appropriate labels, a title, and a descriptive caption. Color your timeseries to match the map in the background section.
 
 ```{r}
 ggplot(flux, aes(x = datetime, y = flux, color = site_code))+
@@ -383,13 +383,13 @@ ggplot(flux, aes(x = datetime, y = flux, color = site_code))+
 
 ### Part E
 
-Is our data completely continuous? What will happen if we try to calculate flux with this dataset? Is there a pattern to the breaks? Why might the good folks at BBWM let those breaks happen? 
+Is our data completely continuous? If not, is there a pattern to the breaks? Why might the good folks at BBWM let those breaks happen? What will happen if we try to calculate **an annual flux** with this dataset, as is?  
 
 (Hint: Look at timeseries of the Q and [Si] separately. Think about the flux formula and how you would spend your research dollars.)
 
 ### Part F
 
-Let's fill in our data to make it continuous. You should be careful about doing this in your own work, but for reasons you (should) have discussed in part E we can do it reasonably safely here. There are many ways to interpolate data (with varying degrees of merit). We will be using a simple one: linear interpolation. Essentially, we are telling R to draw a straight line between observations on either side of a data gap. 
+Let's interpolate our data to make it continuous. You should be careful about doing this in your own work, but for reasons you (should) have discussed in part E we can do it reasonably safely here. There are many ways to interpolate data (with varying degrees of merit). We will be using a simple one: linear interpolation. Essentially, we are telling R to draw a straight line between observations on either side of a data gap. 
 
 To do this, we will use the na.approx() function. The 'rule' for linear interpolation is 2. 
 
@@ -429,9 +429,9 @@ We finally have what we need to **calculate annual silicon flux for both watersh
 
 Hints: 
 
-* If you  are struggling check out the [work with data primer](https://rstudio.cloud/learn/primers/2.1) on Rstudio cloud.
-
 * The function water_year() slickly pulls the WY from a date.
+
+* If you  are struggling check out the [work with data primer](https://rstudio.cloud/learn/primers/2.1) on Rstudio cloud.
 
 * Use a caption to explicitly state which watershed has higher weathering rates.
 
@@ -451,7 +451,7 @@ flux_full %>%
 
 ### Part I
 
-Consider your two time series (the one with gaps and the interpolated one) and your annual estimates. Do you think your estimates are biased high, low, or are perfect? Why do you think that? 
+Consider your two time series (the one with gaps and the interpolated one) and your annual estimates. Do you think your **annual flux estimates** are biased high, low, or are perfect? Why do you think that? 
 
 Does this affect your conclusion from the previous part? Why or why not?
 
