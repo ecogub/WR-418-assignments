@@ -95,12 +95,13 @@ p <- read_feather('data/EB_chem_precip.feather') %>%
   mutate(var_pretty = ifelse(var == 'GN_Si', 'Si',
                              ifelse(var == 'GN_Na', 'Na', 
                                      ifelse(var == 'GN_SO4_S', 'SO4', 'fail')))) %>%
-  ggplot(., aes(x = datetime, y = val))+
+  ggplot(., aes(x = datetime, y = val, color = var))+
   geom_line()+
   facet_wrap(~var_pretty, scales = 'free', ncol = 1)+
   labs(x = 'Date', y = '[X] (mg/L)',
        title = 'Rain Gauge Chemistry at East Bear Brook, ME')+
-  theme_minimal()
+  theme_classic()+
+  theme(legend.position = 'none')
 ggplotly(p)
 ```
 Note how some solutes come in regularly from rain, some episodically, and some only rarely.
@@ -188,9 +189,11 @@ data_daily %>%
   mutate(flux_daily = q_sum*nox_mgl) %>%
   .$flux_daily %>%
   sum()*(1/(1e3*ws_area_ha)) # convert mg/week*ha to g/week*ha
+
+
 ```
 
-So we are seeing 0.05 g of NOx per week per hectare fluxing past this guage.
+We are seeing 0.05 g of NOx per week fluxing past this gauge. This is pretty low for a stream of this size in the middle of a massive swath of agricultural land! That's beacuse this gauge is located within experimental plots of a conservation cropping study. You can [read more about it here.](https://www.usgs.gov/centers/ohio-kentucky-indiana-water-science-center/science/school-branch-cr750n-brownsburg). 
 
 # Assignment 
 
