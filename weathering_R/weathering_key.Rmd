@@ -82,7 +82,7 @@ When thinking about solute fluxes as a proxy for weathering rates we need to be 
 
 * Biologic: Solutes concentrations may also be affected by biological demand. Manganese is an important nutrient, meaning plants are actively trying to take it up.
 
-* Atmospheric: Dust and rain can deposit materials weathered elsewhere into the watershed. For example, sites near the coast may experience heavy sodium deposition from sea spray. 
+* Atmospheric: Dust and rain can deposit materials weathered elsewhere into the watershed. This term used to describe these effects 'deposition', with dust as 'dry deposition' and rain, snow, etc. as 'wet deposition. For example, sites near the coast may experience heavy sodium deposition from sea spray. 
 
 * Complexation: As you learned in the Acid Rain assignment, some solutes (like aluminum) have solubilities that depend on the surrounding redox state or pH.
 
@@ -99,7 +99,7 @@ p <- read_feather('data/EB_chem_precip.feather') %>%
   geom_line()+
   facet_wrap(~var_pretty, scales = 'free', ncol = 1)+
   labs(x = 'Date', y = '[X] (mg/L)',
-       title = 'Precipitation Chemistry at East Bear Brook')+
+       title = 'Rain Gauge Chemistry at East Bear Brook, ME')+
   theme_minimal()
 ggplotly(p)
 ```
@@ -117,6 +117,80 @@ Over geologic time (millions to billions of years) weathering plays a critical r
 
 Some researchers are looking into how we can use this effect over more relevant timescales to humanity. You can read more about it in the Taylor et al 2017 publication in the 'pubs' folder of this project.
 
+### Tips on time series data
+
+When working with data derived from different measurement methods, it's important to make sure our data is the same frequency. Some data, like discharge data provided by the USGS is at 15 minutes. The greenhouse gas data you worked with in the Gas Flux assignment was >1Hz. On the other hand, many studies only collect water chemistry every two weeks. 
+
+When performing calculations with data of differing frequencies, it's important to carefully consider what effect we are trying to capture. Let's quickly calculate the weekly flux of nitrate and nitrite past a gauge in an Indiana farm field. 
+
+First I'll grab the data and plot it.
+
+```{r}
+q <- readNWISuv(siteNumbers = '03353420',
+                parameterCd = '00060',
+                startDate = '2020-07-01',
+                endDate = '2020-07-07',
+                tz = 'EST') %>%
+  select(datetime = dateTime, q_cfs = X_00060_00000)
+
+n <- readNWISdv(siteNumbers = '03353420',
+                parameterCd = '99133',
+                startDate = '2020-07-01',
+                endDate = '2020-07-07') %>%
+  select(datetime = Date, nox_mgl = X_99133_00003)
+
+data <- q %>%
+  full_join(n, by = 'datetime')
+```
+
+Let's take a look at the first couple of rows.
+```{r}
+head(data)
+```
+
+There are a lot of NAs for out nitrogen data! Is there a pattern to when they match?
+
+```{r}
+data %>%
+  na.omit()
+```
+
+Indeed they there is! Just once every day. If you carefully read my dataRetrival calls, you'd notice that I pulled 15 minute data for Q and daily data for nitrogen. Now, we want to calculate flux for the week. If we use the NA omitted version of  our data (essentially using the closest Q value to each nitrogen measurement), we are throwing out a lot of good information and assuming the nearest Q value is representative of something we already measured. In this case, the best method is to convert our Q from cubic feet per second to liters per 15 minutes, sum our converted Q over each day, and use our daily, summed Q to calculate flux.
+
+Let's tackle the daily Q first.
+
+```{r, message=FALSE}
+q_daily <- q %>%
+  mutate(q_L_15min = q_cfs*(900/1)*(1/28.317)) %>%  # convert to L per 15 mins
+  group_by(day(datetime)) %>% # group by days
+  summarize(q_sum = sum(q_L_15min), # take the sum of all Q on that day
+            datetime = as.Date(min(datetime))) %>% # get the date for each Q sum
+  select(-`day(datetime)`) # get rid of our grouping column
+
+glimpse(q_daily)
+```
+
+Great, we now have a really solid estimate of the Q over the days we have nitrate/nitrite data. Now we just need to join it to with that nitrate/nitrite data and calculate flux using the formula in the previous section. Before we calculate flux, we can check to make sure they match in frequency now.
+
+```{r}
+data_daily <- q_daily %>%
+  full_join(n, by = 'datetime')
+
+data_daily  
+```
+
+Everything looks good. We have the Q for each day and the daily average nitrate/nitrite concentration for that day. All that's left to do is calculate flux for the week!
+
+```{r}
+ws_area_ha <- (readNWISsite('03353420')$drain_area_va)*(258.999/1) # get watershed area and convert from mi2 to ha
+
+data_daily %>%
+  mutate(flux_daily = q_sum*nox_mgl) %>%
+  .$flux_daily %>%
+  sum()*(1/(1e3*ws_area_ha)) # convert mg/week*ha to g/week*ha
+```
+
+So we are seeing 0.05 g of NOx per week per hectare fluxing past this guage.
 
 # Assignment 
 
@@ -248,6 +322,8 @@ Why are we using silicon fluxes and not one of the other variables you listed in
 ### Part B
 
 What is the frequency of the discharge data? What about the frequency of the silicon samples? Do they match? Are there exceptions? Prove it via code. Make sure your output is able to be understood by a person.
+
+(Hint: Look at 'Tips on time series data' in the introduction.)
 
 ```{r}
 data %>%
