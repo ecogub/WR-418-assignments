@@ -1,0 +1,227 @@
+---
+title: "Ion Sorption"
+author: 'Nick Gubbins'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=F}
+library(sf)
+library(zoo)
+library(here)
+library(tidyverse)
+library(dataRetrieval)
+library(mapview)
+library(lubridate)
+library(ggthemes)
+library(nhdplusTools)
+library(raster)
+library(elevatr)
+```
+
+
+# Suspended sediment and contaminants
+
+For this assignment we will be looking at the correlation between various
+metals and suspended sediment concentrations at sites across Colorado. 
+
+This document was made with code contributions from Matthew Ross and Bryce Pulver.
+
+## Maps in R
+
+We'd like to use this assignment as a chance to give you a low-stakes way to get
+comfortable with mapping in R. I'll be using data from the [NHDplus dataset](https://www.epa.gov/waterdata/basic-information), a government funded mapping of all waterways in the lower 48 state (above a certain size threshold).
+
+If this feels too complex that's ok! Just follow along with my code and use 
+'glimpse()', 'View()', and/or 'str()' to get familiar with the spatial products 
+I am working with. 
+
+### Objects
+
+The tibbles/dataframes/tables we've worked with so far are considered 'simple 
+tables' (or 'st'). To make them spatial objects we can convert them into 'simple
+features' (or 'sf'). The package we use for most, basic spatail operations is 
+called 'sf' for this reason.
+
+Spatial objects in R will always have at least an ID and a geometry (point, 
+linestring, polygon, etc.). Since the world is 3D and our screens are 2D, it 
+also need to be projected onto some sort of coordinate plane, called a CRS 
+(coordinate reference system). 
+
+This is not a GIS course so we won't be getting into the weeds of the how/why 
+of all these pieces. Just know that to map in R spatial objects need to know 
+what the things are (ID), where the things exists in space (geometry), and what
+space to draw those things in (CRS). 
+
+```{r}
+# general data set for poudre USGS Station
+
+poudre_nwis <- whatNWISdata(siteNumber = "06752260")
+
+site_coords <- st_as_sf(poudre_nwis, coords = c('dec_long_va', 'dec_lat_va'), crs = 4326)
+
+## Creating the nldi object to get flowlinmes from the USGS guage #06752260
+
+nldi_nwis <- list(featureSource = "nwissite", featureID = "USGS-06752260")
+
+## Check for the COMID (catchment ID)
+
+discover_nhdplus_id(nldi_feature = nldi_nwis)
+
+## This function retrieves upstream flowlines
+
+flowline_nldi <- navigate_nldi(nldi_feature = nldi_nwis,
+              mode = "upstreamTributaries",
+              data_source = "flowlines",
+  distance_km = 1000)
+
+## NHD Flow lines tool now makes you unlist their contents
+
+flowline <- flowline_nldi$geometry
+
+## Watershed boundary from stream stats for the Poudre
+
+wsb_poudre <- st_read("data/globalwatershed.shp", crs = 4326)
+
+```
+
+You can read more about [spatial objects in R here.](https://rspatial.org/raster/spatial/index.html)
+
+### Plotting maps in base R
+
+We can use 'st_geometry()' and the base R 'plot()' to make simple, ugly maps. 
+
+Just like using 'plot()' instead of 'ggplot()', there are later, greater packages
+out for use today.
+
+```{r}
+
+plot(st_geometry(wsb_poudre))
+plot(st_geometry(flowline), add = T)
+```
+
+We could improve this plot in many ways (title, basemap, scale bars, etc.), but
+why do that when someone else already did?
+
+### Mapview in R
+
+In this course, we recommend using the 'mapview' package to make slick looking 
+maps quickly. These maps are dynamic and use the package 'leaflet' in the background
+to render a lot of the quality of life features we've come to expect in maps. 
+
+```{r}
+mapview(site_coords,color = "red" ) +
+mapview(wsb_poudre) +
+  mapview(flowline, color = "blue", legend = F)
+```
+
+In this assignment you'll be making a very simple mapview and apply what you've 
+learned in lecture and in past homeworks to investigate ion sorption. 
+
+# Assignment
+
+*Expectations for this assignment have risen! Make sure your document is free of clutter before you submit. This assignment is much less technically demanding, so thoughtful written responses are key for success.*
+
+This week's assignment will be using a dataset containing observations of 
+contaminants from different water quality monitoring sites across CO (mostlyvia  USGS and [MWRD](https://www.metrowaterrecovery.com/)).
+
+The sites in our dataset are mapped out for you below:
+
+```{r, echo= F, message=F}
+sites <- st_read('data/sites.gpkg', quiet = T)
+
+mapview(sites, legend = F)
+```
+
+## Q1
+
+Read in the data from our project folder ('c_metals_tss.csv').
+
+```{r}
+
+```
+
+
+## Q2
+
+Pick a site to focus on with metals and sediment data. If you don't want to hunt
+for sites, I reccomend either USGS-09095500 or USGS-09260000. 
+
+Make a map of your site only. Add text to your output to make it immediately 
+obvious which site you chose (no clicking required). This could be through a title,
+caption, label, etc.
+
+(Hint: Look at [the articles section of the mapview site](https://r-spatial.github.io/mapview/articles/articles/mapview_01-basics.html) for help.)
+
+
+```{r}
+
+```
+
+## Q3
+
+Plot a time series of TSS data (codes are 'Total suspended solids' and/or 
+'Suspended Sediment Concentration (SSC)') at your site with appopriate labels, 
+a title, and a descriptive caption. Describe any seasonal or annual trends you 
+see in your figure caption.
+
+
+```{r}
+
+```
+
+## Q4
+
+Plot a facet-wrapped time series of 3 metals of your choice for your site. 
+Make sure your graph is complete with a title, labels, and a descriptive caption.
+Descirbe any seasonal or annual trends you find in your figure caption.
+
+```{r}
+
+```
+
+
+## Q5
+
+Make a wide formatted dataset of only TSS and metals concentrations at your site.
+Use 'glimpse()' to show your output.
+
+```{r}
+
+```
+
+## Q6
+
+Use your newly combined data to create a scatterplot of TSS vs metals concentration.
+Make sure your graph is complete with a title, labels, and a descriptive caption.
+
+Your graph should be able to be understood by a human (e.g. Nick). This can be 
+done in any number of ways: facet-wrapping, coloring, selecting a subset of metals,
+etc. Look ahead to Q7 to make sure your graph will be useful. 
+
+```{r}
+
+```
+
+## Q7 
+
+Discuss any correlations you find in your plot(s) from Q6. What do you think 
+controls variation in TSS? Keep in mind that correlation != causation (or 
+mechanism for that matter), so your discussion will need to cite lectures or 
+outside material, not just that the dots on the graph go up or down. 
+
+
+## Bonus
+
+Download Q data for your site using the dataRetrieval package and investigate 
+the correlation between Q and TSS and Q and metals.
+
+```{r}
+
+```
+
+
+Do you see a correlation? Why (or why not) is that the case? 
+
+
