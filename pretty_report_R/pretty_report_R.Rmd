@@ -1,37 +1,118 @@
 ---
 title: "Pretty Report"
 author: "Nick Gubbins"
-date: "2/24/2022"
+date: "4/4/2022"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dataRetrieval)
+library(mapview)
+library(lfstat)
+library(sf)
+library(here)
 ```
 
 # Sharing Data
 
-## What goes into a solid figure
-
-## Why care about warnings?
-
-## How should I write my code?
-
+A key part of the scientific process is communicating your findings with others. 
+While many of you have had experience doing this in more formal settings 
+(like an essay, poster, or talk), often times scientists need to communicate 
+intermediate results to collaborators and stakeholders. Knitted R markdown documents are a great option for this kind of communication. HTML documents allow for high quality, interactive figures with relatively little initial investment. 
 
 # Assignment
 
-In this assignment you will go back to our three previous assignments and 
-recreate a three figures to present as beautifully as possible. Imagine this report
-is going to be shared with a group interested in what we are doing in this course.
+In this assignment you will go back to our four previous assignments and 
+recreate three figures as beautifully as possible. Your final product will be a report that is clear of errors and easy to interpret. Imagine this report is going to be shared with a group of students interested in what we are doing in this course.
+
+For each plot you will:
+
+* Recreate a previous figure
+
+    * Copy and paste the original code from your past assignment
+
+    * Move any underlying data from the assignment to this project's data folder
+    
+    * Load any packages needed for the figure
+
+    * Recreate/read in any data objects needed to make the figure
+    
+* Write a short paragraph on how the figure will be improved
+
+    * Cite specific design principles from our guest lecturer
+    
+    * Explain why previous design choices were ineffective
+    
+    * Explain how your new design choices will rectify those issues
+    
+* Implement your written changes into a new, improved figure
 
 Each plot should:
-* Make it clear where the data was collected
-* Clearly highlight the effect of interest
+
+* Make it clear where the data was collected and who collected it
+
+* Have a design that clearly highlights the effect of interest
+
+* Include a descriptive caption
+
 * Have proper labels and units
 
-## Plot 1
+* Have a helpful title (not just 'Y vs X')
 
-## Plot 2
+**The goal of this assignment is to have the cleanest, prettiest, most effective knitted document you can make.** 
 
-## Plot 3
+**Delete all my introductory text, check for errors, and make sure your name is listed as the author before submitting.**
+
+**Take pride in it and make it to be shared with others!**
+
+## Figure 1
+
+### Figure as it existed (copy paste code here):
+
+```{r}
+
+```
+
+### Describe how you will improve this figure:
+
+### Improved figure
+
+```{r}
+
+```
+
+## Figure 2
+
+### Figure as it existed (copy paste code here):
+
+```{r}
+
+```
+
+### Describe how you will improve this figure:
+
+### Improved figure
+
+```{r}
+
+```
+
+
+## Figure 3
+
+### Figure as it existed (copy paste code here):
+
+```{r}
+
+```
+
+### Describe how you will improve this figure:
+
+### Improved figure
+
+```{r}
+
+```
 
