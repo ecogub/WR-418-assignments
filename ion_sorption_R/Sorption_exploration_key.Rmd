@@ -148,7 +148,7 @@ metals_tss <- read_csv('data/c_metals_tss.csv')
 ## Q2
 
 Pick a site to focus on with metals and sediment data. If you don't want to hunt
-for sites, I reccomend either USGS-09095500 or USGS-09260000. 
+for sites, I suggest USGS-09260000. 
 
 Make a map of your site only. Add text to your output to make it immediately 
 obvious which site you chose (no clicking required). This could be through a title,
@@ -188,7 +188,7 @@ ggplot(tss_site %>%
 
 Plot a facet-wrapped time series of 3 metals of your choice for your site. 
 Make sure your graph is complete with a title, labels, and a descriptive caption.
-Descirbe any seasonal or annual trends you find in your figure caption.
+Describe any seasonal or annual trends you find in your figure caption.
 
 ```{r}
 
