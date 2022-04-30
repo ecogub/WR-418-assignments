@@ -102,11 +102,11 @@ plot(st_geometry(flowline), add = T)
 ```
 
 We could improve this plot in many ways (title, basemap, scale bars, etc.), but
-why do that when someone else already did?
+why do that when someone else already has?
 
 ### Mapview in R
 
-In this course, we recommend using the 'mapview' package to make slick looking 
+In this course, we recommend using the 'mapview' package to make high quality 
 maps quickly. These maps are dynamic and use the package 'leaflet' in the background
 to render a lot of the quality of life features we've come to expect in maps. 
 
@@ -117,7 +117,8 @@ mapview(wsb_poudre) +
 ```
 
 In this assignment you'll be making a very simple mapview and apply what you've 
-learned in lecture and in past homeworks to investigate ion sorption. 
+learned in lecture and in past assignments to investigate ion sorption in a Colorado
+river. 
 
 # Assignment
 
@@ -162,7 +163,7 @@ caption, label, etc.
 ## Q3
 
 Plot a time series of TSS data (codes are 'Total suspended solids' and/or 
-'Suspended Sediment Concentration (SSC)') at your site with appopriate labels, 
+'Suspended Sediment Concentration (SSC)') at your site with appropriate labels, 
 a title, and a descriptive caption. Describe any seasonal or annual trends you 
 see in your figure caption.
 
